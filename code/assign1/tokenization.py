@@ -1,19 +1,18 @@
 from util import *
 
+
 # Add your import statements here
-
-
 
 
 class Tokenization():
 
-	def naive(self, text):
-		"""
+    def naive(self, text):
+        """
 		Tokenization using a Naive Approach
 
 		Parameters
 		----------
-		arg1 : list
+		text : list
 			A list of strings where each string is a single sentence
 
 		Returns
@@ -22,21 +21,19 @@ class Tokenization():
 			A list of lists where each sub-list is a sequence of tokens
 		"""
 
-		tokenizedText = None
+        tokenizedText = []
 
-		#Fill in code here
+        # Fill in code here
 
-		return tokenizedText
+        return tokenizedText
 
-
-
-	def pennTreeBank(self, text):
-		"""
+    def pennTreeBank(self, text):
+        """
 		Tokenization using the Penn Tree Bank Tokenizer
 
 		Parameters
 		----------
-		arg1 : list
+		text : list
 			A list of strings where each string is a single sentence
 
 		Returns
@@ -45,8 +42,8 @@ class Tokenization():
 			A list of lists where each sub-list is a sequence of tokens
 		"""
 
-		tokenizedText = None
+        tokenizedText = None
 
-		#Fill in code here
+        # Fill in code here
 
-		return tokenizedText
+        return tokenizedText

@@ -21,7 +21,7 @@ class SentenceSegmentation():
 			A list of strings where each string is a single sentence
 		"""
 
-        segmentedText = [a.strip(' ') for a in text.replace('.', '.<>').split('<>')]
+        segmentedText = [a.strip(' ') for a in text.replace(' .', ' .<>').split('<>')]
         if '' in segmentedText:
             segmentedText.remove('')
 
@@ -62,8 +62,8 @@ if __name__ == "__main__":
         punkt_res = segmenter.punkt(query)
         if naive_res != punkt_res:
             count += 1
-            print(naive_res)
-            print(punkt_res)
+#            print(naive_res)
+#            print(punkt_res)
     print('ratio of not matched for queries:'+str(count)+'/'+str(len(queries)))
     docs_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_docs.json', 'r'))[:]
     bodies = [item["body"] for item in docs_json]
@@ -73,6 +73,6 @@ if __name__ == "__main__":
         punkt_res = segmenter.punkt(body)
         if naive_res != punkt_res:
             count_body += 1
-            print(naive_res)
-            print(punkt_res)
+#            print(naive_res)
+#            print(punkt_res)
     print('ratio of not matched for document bodies:'+str(count_body)+'/'+str(len(bodies)))
