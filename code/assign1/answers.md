@@ -22,8 +22,9 @@ source link: https://towardsdatascience.com/stemming-lemmatization-what-ba782b7c
 
 ####stemming
 
-best option in nltk is snowball stemmer
+best option in nltk is snowball stemmer. Downside to this is it doesn't get the context
+eg: meeting as a noun and as a verb both give meet when stemmed
 
 ####lemmatization 
 
-termed as better since it understands pos but a full sentence is needed for the whole operation ,atleast in spacy
+termed as better since it understands pos but a full sentence is needed for the whole operation ,at least in spacy. It is not accurate in case if we use wordnet since by default it assumes noun and any correction to it is complex when compared to using spacy.

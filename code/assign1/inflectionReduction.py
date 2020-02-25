@@ -1,14 +1,14 @@
-from code.assign1.util import *
+from util import *
+from nltk.stem import SnowballStemmer
+
 
 # Add your import statements here
 
 
-
-
 class InflectionReduction:
 
-	def reduce(self, text):
-		"""
+    def reduce(self, text):
+        """
 		Stemming/Lemmatization
 
 		Parameters
@@ -22,12 +22,13 @@ class InflectionReduction:
 		list
 			A list of lists where each sub-list is a sequence of
 			stemmed/lemmatized tokens representing a sentence
+
+		we are using snowball stemmer for now#TODO
 		"""
 
-		reducedText = None
+        sb = SnowballStemmer('english')
+        reducedText = [[sb.stem(word) for word in sent] for sent in text]
 
-		#Fill in code here
-		
-		return reducedText
+        # Fill in code here
 
-
+        return reducedText
