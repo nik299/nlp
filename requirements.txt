@@ -1,1 +1,3 @@
 nltk
+#this ones are for testing
+spacy

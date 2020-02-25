@@ -21,3 +21,9 @@ it's a bottom up approach
 source link: https://towardsdatascience.com/stemming-lemmatization-what-ba782b7c0bd8
 
 ####stemming
+
+best option in nltk is snowball stemmer
+
+####lemmatization 
+
+termed as better since it understands pos but a full sentence is needed for the whole operation ,atleast in spacy
