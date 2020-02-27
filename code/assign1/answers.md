@@ -2,11 +2,6 @@
 ###tokenizers
 
 source link for penn and punkt: http://www.nltk.org/api/nltk.tokenize.html
-####Penn Treebank Tokenizer
-
-The Treebank tokenizer uses regular expressions to tokenize text as in Penn Treebank. This implementation is a port of the tokenizer sed script written by Robert McIntyre and available at [here](http://www.cis.upenn.edu/~treebank/tokenizer.sed. )
-
-it's a top down approach based on some rules.
 
 ####Punkt Sentence Tokenizer
 
@@ -15,6 +10,22 @@ This tokenizer divides a text into a list of sentences by using an unsupervised 
 The NLTK data package includes a pre-trained Punkt tokenizer for English.
 
 it's a bottom up approach  
+
+####punkt vs naive approach
+a.no example for now to wsay naive is better than punkt
+b.example mentioned in question 2 and "a. ferri's vortical layer is brought into evidence ." In this sentence poorly
+written grammar at a. ferri's 
+
+####Naive word tokenizer
+
+A naive apprach for word tokenizer is to split along the whitespaces and commas.
+
+####Penn Treebank Tokenizer
+
+The Treebank tokenizer uses regular expressions to tokenize text as in Penn Treebank. This implementation is a port of the tokenizer sed script written by Robert McIntyre and available at [here](http://www.cis.upenn.edu/~treebank/tokenizer.sed. )
+
+it's a top down approach based on some rules.
+
 
 ###stemming vs lemmatization
 
