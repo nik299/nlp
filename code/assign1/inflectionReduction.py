@@ -23,7 +23,7 @@ class InflectionReduction:
 			A list of lists where each sub-list is a sequence of
 			stemmed/lemmatized tokens representing a sentence
 
-		we are using snowball stemmer for now#TODO
+		we are using snowball stemmer
 		"""
 
         sb = SnowballStemmer('english')

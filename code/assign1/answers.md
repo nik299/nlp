@@ -12,7 +12,7 @@ The NLTK data package includes a pre-trained Punkt tokenizer for English.
 it's a bottom up approach  
 
 ####punkt vs naive approach
-a.no example for now to wsay naive is better than punkt
+a.no example for now to say naive is better than punkt
 b.example mentioned in question 2 and "a. ferri's vortical layer is brought into evidence ." In this sentence poorly
 written grammar at a. ferri's 
 

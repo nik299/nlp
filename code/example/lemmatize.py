@@ -8,9 +8,7 @@ from nltk.stem import WordNetLemmatizer
 
 # run 'python -m spacy download en' if you have installed for the first time
 nlp = spacy.load('en')
-document = u"I have a meeting with teacher for dance classes. I am meeting him around 12 noon. Now we are " \
-           u"dancing. corpora is plural form of corpus. Apple is singular form of apples ." \
-           u" This is same for leaf and leaves "
+document = u"doctor operates on patient.Kidney operation is important. operational procedure. leaves and leaf"
 
 sb = SnowballStemmer('english')
 wn = WordNetLemmatizer()

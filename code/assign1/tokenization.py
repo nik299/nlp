@@ -63,8 +63,9 @@ if __name__ == "__main__":
         punkt_res = tokenizer.pennTreeBank(query)
         if naive_res != punkt_res:
             count += 1
-    #            print(naive_res)
-    #            print(punkt_res)
+        #   print(naive_res)
+        #   print(punkt_res)
+        #   print(query)
     print('ratio of not matched for segmented_queries:' + str(count) + '/' + str(len(segmented_queries)))
     docs_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_docs.json', 'r'))[:]
     segmented_bodies = [segmenter.naive(item["body"]) for item in docs_json]
@@ -75,10 +76,12 @@ if __name__ == "__main__":
         if naive_res != punkt_res:
             count_body += 1
     #        get some examples if we need to analyse
-    #        if count_body == 1:
-    #            for i in range(len(naive_res)):
-    #                if naive_res[i] != punkt_res[i]:
-    #                    print(naive_res[i])
-    #                    print(punkt_res[i])
-    #                print(len(naive_res), len(punkt_res))
+            '''
+            if count_body < 5:
+                for i in range(len(naive_res)):
+                    if naive_res[i] != punkt_res[i]:
+                        print(naive_res[i])
+                        print(punkt_res[i])
+                    print(body[i])
+            '''
     print('ratio of not matched for document segmented_bodies:' + str(count_body) + '/' + str(len(segmented_bodies)))
