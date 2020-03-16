@@ -22,13 +22,13 @@ class SentenceSegmentation():
 			A list of strings where each string is a single sentence
 		"""
 
-        segmentedText = [a.strip(' ') for a in text.replace('? ', '? <>').replace('. ', '. <>').split('<>')]
-        if '' in segmentedText:
-            segmentedText.remove('')
+        segmented_text = [a.strip(' ') for a in text.replace('? ', '? <>').replace('. ', '. <>').split('<>')]
+        if '' in segmented_text:
+            segmented_text.remove('')
 
         # Fill in code here
 
-        return segmentedText
+        return segmented_text
 
     def punkt(self, text):
         """
@@ -45,16 +45,16 @@ class SentenceSegmentation():
 			A list of strings where each strin is a single sentence
 		"""
         sent_splitter = punkt.PunktSentenceTokenizer()
-        segmentedText = sent_splitter.tokenize(text)
+        segmented_text = sent_splitter.tokenize(text)
 
         # Fill in code here
 
-        return segmentedText
+        return segmented_text
 
 
 # this part is used to test the above functions
 if __name__ == "__main__":
-    queries_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_queries.json', 'r'))[:]
+    queries_json = json.load(open("D:\\PycharmProjects\nlp\cranfield\cran_docs.json", 'r'))[:]
     queries = [item["query"] for item in queries_json]
     count = 0
     segmenter = SentenceSegmentation()
@@ -66,7 +66,7 @@ if __name__ == "__main__":
             # print(naive_res)
             # print(punkt_res)
     print('ratio of not matched for queries:' + str(count) + '/' + str(len(queries)))
-    docs_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_docs.json', 'r'))[:]
+    docs_json = json.load(open("D:\PycharmProjects\nlp\cranfield\cran_docs.json", 'r'))[:]
     bodies = [item["body"] for item in docs_json]
     count_body = 0
     for body in bodies:
