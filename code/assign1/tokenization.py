@@ -53,7 +53,7 @@ class Tokenization():
 
 
 if __name__ == "__main__":
-    queries_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_queries.json', 'r'))[:]
+    queries_json = json.load(open(r'D:\PycharmProjects\nlp\cranfield\cran_queries.json', 'r'))[:]
     segmenter = SentenceSegmentation()
     segmented_queries = [segmenter.naive(item["query"]) for item in queries_json]
     count = 0
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         #   print(punkt_res)
         #   print(query)
     print('ratio of not matched for segmented_queries:' + str(count) + '/' + str(len(segmented_queries)))
-    docs_json = json.load(open('/home/nikhil/PycharmProjects/nlp/cranfield/cran_docs.json', 'r'))[:]
+    docs_json = json.load(open(r'D:\PycharmProjects\nlp\cranfield\cran_docs.json', 'r'))[:]
     segmented_bodies = [segmenter.naive(item["body"]) for item in docs_json]
     count_body = 0
     for body in segmented_bodies:

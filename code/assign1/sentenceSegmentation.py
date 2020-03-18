@@ -54,7 +54,7 @@ class SentenceSegmentation():
 
 # this part is used to test the above functions
 if __name__ == "__main__":
-    queries_json = json.load(open("D:\\PycharmProjects\nlp\cranfield\cran_docs.json", 'r'))[:]
+    queries_json = json.load(open(r"D:\PycharmProjects\nlp\cranfield\cran_queries.json", 'r'))[:]
     queries = [item["query"] for item in queries_json]
     count = 0
     segmenter = SentenceSegmentation()
@@ -66,7 +66,7 @@ if __name__ == "__main__":
             # print(naive_res)
             # print(punkt_res)
     print('ratio of not matched for queries:' + str(count) + '/' + str(len(queries)))
-    docs_json = json.load(open("D:\PycharmProjects\nlp\cranfield\cran_docs.json", 'r'))[:]
+    docs_json = json.load(open(r"D:\PycharmProjects\nlp\cranfield\cran_docs.json", 'r'))[:]
     bodies = [item["body"] for item in docs_json]
     count_body = 0
     for body in bodies:

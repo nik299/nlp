@@ -1,5 +1,6 @@
 nltk
-matplotlib ==3.20
+matplotlib
+pandas
 #this ones are for testing
 Cython
 spacy

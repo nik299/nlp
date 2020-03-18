@@ -1,27 +1,26 @@
 from util import *
 
+
 # Add your import statements here
 
 
+class Evaluation:
 
-
-class Evaluation():
-
-	def queryPrecision(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
-		"""
+    def queryPrecision(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
+        """
 		Computation of precision of the Information Retrieval System
 		at a given value of k for a single query
 
 		Parameters
 		----------
-		arg1 : list
+		query_doc_IDs_ordered : list
 			A list of integers denoting the IDs of documents in
 			their predicted order of relevance to a query
-		arg2 : int
+		query_id : int
 			The ID of the query in question
-		arg3 : list
+		true_doc_IDs : list
 			The list of IDs of documents relevant to the query (ground truth)
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -30,30 +29,29 @@ class Evaluation():
 			The precision value as a number between 0 and 1
 		"""
 
-		precision = -1
+        precision = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return precision
+        return precision
 
-
-	def meanPrecision(self, doc_IDs_ordered, query_ids, qrels, k):
-		"""
+    def meanPrecision(self, doc_IDs_ordered, query_ids, qrels, k):
+        """
 		Computation of precision of the Information Retrieval System
 		at a given value of k, averaged over all the queries
 
 		Parameters
 		----------
-		arg1 : list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
-		arg2 : list
+		query_ids : list
 			A list of IDs of the queries for which the documents are ordered
-		arg3 : list
+		qrels : list
 			A list of dictionaries containing document-relevance
 			judgements - Refer cran_qrels.json for the structure of each
 			dictionary
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -62,28 +60,27 @@ class Evaluation():
 			The mean precision value as a number between 0 and 1
 		"""
 
-		meanPrecision = -1
+        meanPrecision = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return meanPrecision
+        return meanPrecision
 
-	
-	def queryRecall(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
-		"""
+    def queryRecall(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
+        """
 		Computation of recall of the Information Retrieval System
 		at a given value of k for a single query
 
 		Parameters
 		----------
-		arg1 : list
+		query_doc_IDs_ordered : list
 			A list of integers denoting the IDs of documents in
 			their predicted order of relevance to a query
-		arg2 : int
+		query_id : int
 			The ID of the query in question
-		arg3 : list
+		true_doc_IDs : list
 			The list of IDs of documents relevant to the query (ground truth)
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -92,30 +89,29 @@ class Evaluation():
 			The recall value as a number between 0 and 1
 		"""
 
-		recall = -1
+        recall = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return recall
+        return recall
 
-
-	def meanRecall(self, doc_IDs_ordered, query_ids, qrels, k):
-		"""
+    def meanRecall(self, doc_IDs_ordered, query_ids, qrels, k):
+        """
 		Computation of recall of the Information Retrieval System
 		at a given value of k, averaged over all the queries
 
 		Parameters
 		----------
-		arg1 : list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
-		arg2 : list
+		query_ids : list
 			A list of IDs of the queries for which the documents are ordered
-		arg3 : list
+		qrels : list
 			A list of dictionaries containing document-relevance
 			judgements - Refer cran_qrels.json for the structure of each
 			dictionary
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -124,28 +120,27 @@ class Evaluation():
 			The mean recall value as a number between 0 and 1
 		"""
 
-		meanRecall = -1
+        meanRecall = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return meanRecall
+        return meanRecall
 
-
-	def queryFscore(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
-		"""
+    def queryFscore(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
+        """
 		Computation of fscore of the Information Retrieval System
 		at a given value of k for a single query
 
 		Parameters
 		----------
-		arg1 : list
+		query_doc_IDs_ordered : list
 			A list of integers denoting the IDs of documents in
 			their predicted order of relevance to a query
-		arg2 : int
+		query_id : int
 			The ID of the query in question
-		arg3 : list
+		true_doc_IDs : list
 			The list of IDs of documents relevant to the query (ground truth)
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -154,30 +149,29 @@ class Evaluation():
 			The fscore value as a number between 0 and 1
 		"""
 
-		fscore = -1
+        fscore = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return fscore
+        return fscore
 
-
-	def meanFscore(self, doc_IDs_ordered, query_ids, qrels, k):
-		"""
+    def meanFscore(self, doc_IDs_ordered, query_ids, qrels, k):
+        """
 		Computation of fscore of the Information Retrieval System
 		at a given value of k, averaged over all the queries
 
 		Parameters
 		----------
-		arg1 : list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
-		arg2 : list
+		query_ids : list
 			A list of IDs of the queries for which the documents are ordered
-		arg3 : list
+		qrels : list
 			A list of dictionaries containing document-relevance
 			judgements - Refer cran_qrels.json for the structure of each
 			dictionary
-		arg4 : int
+		k : int
 			The k value
 		
 		Returns
@@ -186,28 +180,27 @@ class Evaluation():
 			The mean fscore value as a number between 0 and 1
 		"""
 
-		meanFscore = -1
+        meanFscore = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return meanFscore
-	
+        return meanFscore
 
-	def queryNDCG(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
-		"""
+    def queryNDCG(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
+        """
 		Computation of nDCG of the Information Retrieval System
 		at given value of k for a single query
 
 		Parameters
 		----------
-		arg1 : list
+		query_doc_IDs_ordered : list
 			A list of integers denoting the IDs of documents in
 			their predicted order of relevance to a query
-		arg2 : int
+		query_id : int
 			The ID of the query in question
-		arg3 : list
+		true_doc_IDs : list
 			The list of IDs of documents relevant to the query (ground truth)
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -216,30 +209,29 @@ class Evaluation():
 			The nDCG value as a number between 0 and 1
 		"""
 
-		nDCG = -1
+        nDCG = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return nDCG
+        return nDCG
 
-
-	def meanNDCG(self, doc_IDs_ordered, query_ids, qrels, k):
-		"""
+    def meanNDCG(self, doc_IDs_ordered, query_ids, qrels, k):
+        """
 		Computation of nDCG of the Information Retrieval System
 		at a given value of k, averaged over all the queries
 
 		Parameters
 		----------
-		arg1 : list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
-		arg2 : list
+		query_ids : list
 			A list of IDs of the queries for which the documents are ordered
-		arg3 : list
+		qrels : list
 			A list of dictionaries containing document-relevance
 			judgements - Refer cran_qrels.json for the structure of each
 			dictionary
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -248,29 +240,28 @@ class Evaluation():
 			The mean nDCG value as a number between 0 and 1
 		"""
 
-		meanNDCG = -1
+        meanNDCG = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return meanNDCG
+        return meanNDCG
 
-
-	def queryAveragePrecision(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
-		"""
+    def queryAveragePrecision(self, query_doc_IDs_ordered, query_id, true_doc_IDs, k):
+        """
 		Computation of average precision of the Information Retrieval System
 		at a given value of k for a single query (the average of precision@i
 		values for i such that the ith document is truly relevant)
 
 		Parameters
 		----------
-		arg1 : list
+		query_doc_IDs_ordered : list
 			A list of integers denoting the IDs of documents in
 			their predicted order of relevance to a query
-		arg2 : int
+		query_id : int
 			The ID of the query in question
-		arg3 : list
+		true_doc_IDs : list
 			The list of documents relevant to the query (ground truth)
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -279,30 +270,29 @@ class Evaluation():
 			The average precision value as a number between 0 and 1
 		"""
 
-		avgPrecision = -1
+        avgPrecision = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return avgPrecision
+        return avgPrecision
 
-
-	def meanAveragePrecision(self, doc_IDs_ordered, query_ids, q_rels, k):
-		"""
+    def meanAveragePrecision(self, doc_IDs_ordered, query_ids, q_rels, k):
+        """
 		Computation of MAP of the Information Retrieval System
 		at given value of k, averaged over all the queries
 
 		Parameters
 		----------
-		arg1 : list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
-		arg2 : list
+		query_ids : list
 			A list of IDs of the queries
-		arg3 : list
+		q_rels : list
 			A list of dictionaries containing document-relevance
 			judgements - Refer cran_qrels.json for the structure of each
 			dictionary
-		arg4 : int
+		k : int
 			The k value
 
 		Returns
@@ -311,9 +301,8 @@ class Evaluation():
 			The MAP value as a number between 0 and 1
 		"""
 
-		meanAveragePrecision = -1
+        meanAveragePrecision = -1
 
-		#Fill in code here
+        # Fill in code here
 
-		return meanAveragePrecision
-
+        return meanAveragePrecision
