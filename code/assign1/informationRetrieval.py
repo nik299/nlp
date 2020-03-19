@@ -10,6 +10,8 @@ class InformationRetrieval():
 
     def __init__(self):
         self.index = None
+        self.vocab_list = None
+        self.docIDs = None
 
     def buildIndex(self, docs, docIDs):
         """
@@ -29,29 +31,32 @@ class InformationRetrieval():
 		None
 		"""
         vocab_list = []
-        for doc in docs:
+        for doc_ind in docs:
             for sent in docs:
                 vocab_list = vocab_list + sent
 
-        vocab_list = list(set(vocab_list))
+        vocab_list = list(set(vocab_list)).sort()
         index_df = pd.DataFrame(data=np.zeros((len(vocab_list), len(docIDs) + 2)), index=vocab_list,
                                 columns=docIDs + ['n_i', 'idf'])
-        for doc in range(len(docs)):
+        for doc_ind in range(len(docs)):
             p = 0
-            for sent in docs[doc]:
+            for sent in docs[doc_ind]:
                 for word in sent:
                     if word in vocab_list:
-                        index_df[word, doc] += 1
+                        index_df.loc[[word], [docIDs[doc_ind]]] += 1
                         if p == 0:
-                            index_df[word, 'n_i'] += 1
+                            index_df.loc[[word], ['n_i']] += 1
                             p = 1
-        index_df['idf'] = index_df['n_i'].apply(lambda x: np.log(len(docs) / x))
+        index_df['idf'] = index_df['n_i'].apply(lambda x: np.log(len(docs) / x) if x > 0 else 0)
+        index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
         index = index_df
 
         # Fill in code here
 
         self.index = index
+        self.vocab_list = vocab_list
+        self.docIDs = docIDs
 
     def rank(self, queries):
         """
@@ -62,7 +67,7 @@ class InformationRetrieval():
 		queries : list
 			A list of lists of lists where each sub-list is a query and
 			each sub-sub-list is a sentence of the query
-		
+
 
 		Returns
 		-------
@@ -70,9 +75,22 @@ class InformationRetrieval():
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
 		"""
-
         doc_IDs_ordered = []
-
+        query_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(queries))),
+                                index=self.vocab_list, columns=range(len(queries)))
+        query_df['idf'] = self.index['idf']
+        doc_mag = self.index[self.docIDs].mul(self.index[self.docIDs].to_numpy(), axis='rows').sum(axis=0) \
+            .apply(np.sqrt)
+        for query_ind in range(len(queries)):
+            for sent in queries[query_ind]:
+                for word in sent:
+                    if word in self.vocab_list:
+                        query_df.loc[[word], [query_ind]] += 1
+            query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
+            dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
+            dot_p = dot_p.div(doc_mag).fillna(0) / query_df[query_ind].mul(query_df[query_ind].to_numpy(), axis='rows')\
+                .sum(axis=0)
+            doc_IDs_ordered.append(list(dot_p.loc[dot_p > 0].sort_values(ascending=False).index))
         # Fill in code here
 
         return doc_IDs_ordered
