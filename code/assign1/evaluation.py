@@ -29,7 +29,7 @@ class Evaluation:
 			The precision value as a number between 0 and 1
 		"""
 
-        precision = -1
+        precision = len(list(set(query_doc_IDs_ordered[:k]).intersection(true_doc_IDs))) / k
 
         # Fill in code here
 
@@ -60,8 +60,11 @@ class Evaluation:
 			The mean precision value as a number between 0 and 1
 		"""
 
-        meanPrecision = -1
-
+        sum_precision = 0
+        for query_no in range(len(query_ids)):
+            sum_precision += self.queryPrecision(doc_IDs_ordered[query_no], query_ids[query_no],
+                                                 reslist(query_ids[query_no], qrels), k)
+        meanPrecision = sum_precision / len(query_ids)
         # Fill in code here
 
         return meanPrecision
@@ -88,9 +91,11 @@ class Evaluation:
 		float
 			The recall value as a number between 0 and 1
 		"""
-
-        recall = -1
-
+        try:
+            recall = len(list(set(query_doc_IDs_ordered[:k]).intersection(true_doc_IDs))) / len(true_doc_IDs)
+        except ZeroDivisionError:
+            recall = 0
+            print(query_id ,true_doc_IDs)
         # Fill in code here
 
         return recall
@@ -119,8 +124,11 @@ class Evaluation:
 		float
 			The mean recall value as a number between 0 and 1
 		"""
-
-        meanRecall = -1
+        sum_recall = 0
+        for query_no in range(len(query_ids)):
+            sum_recall += self.queryRecall(doc_IDs_ordered[query_no], query_ids[query_no],
+                                           reslist(query_ids[query_no], qrels), k)
+        meanRecall = sum_recall / len(query_ids)
 
         # Fill in code here
 
@@ -149,7 +157,8 @@ class Evaluation:
 			The fscore value as a number between 0 and 1
 		"""
 
-        fscore = -1
+        fscore = 1 / ((1 / self.queryRecall(query_doc_IDs_ordered, query_id, true_doc_IDs, k)) +
+                      (1 / self.queryPrecision(query_doc_IDs_ordered, query_id, true_doc_IDs, k)))
 
         # Fill in code here
 
@@ -180,7 +189,11 @@ class Evaluation:
 			The mean fscore value as a number between 0 and 1
 		"""
 
-        meanFscore = -1
+        sum_fscore = 0
+        for query_no in range(len(query_ids)):
+            sum_fscore += self.queryFscore(doc_IDs_ordered[query_no], query_ids[query_no],
+                                           reslist(query_ids[query_no], qrels), k)
+        meanFscore = sum_fscore / len(query_ids)
 
         # Fill in code here
 
@@ -199,7 +212,7 @@ class Evaluation:
 		query_id : int
 			The ID of the query in question
 		true_doc_IDs : list
-			The list of IDs of documents relevant to the query (ground truth)
+			The list of dictionaries containing IDs of documents relevant to the query (ground truth)
 		k : int
 			The k value
 
@@ -208,8 +221,8 @@ class Evaluation:
 		float
 			The nDCG value as a number between 0 and 1
 		"""
-
-        nDCG = -1
+        query_score_list = scoremake(query_doc_IDs_ordered[:k], true_doc_IDs)
+        nDCG = dcg(query_score_list) / dcg(sorted(query_score_list, reverse=True))
 
         # Fill in code here
 
@@ -239,8 +252,11 @@ class Evaluation:
 		float
 			The mean nDCG value as a number between 0 and 1
 		"""
-
-        meanNDCG = -1
+        sum_ndcg = 0
+        for query_no in range(len(query_ids)):
+            sum_ndcg += self.queryNDCG(doc_IDs_ordered[query_no], query_ids[query_no],
+                                       rellist(query_ids[query_no], qrels), k)
+        meanNDCG = sum_ndcg / len(query_ids)
 
         # Fill in code here
 
@@ -269,8 +285,14 @@ class Evaluation:
 		float
 			The average precision value as a number between 0 and 1
 		"""
+        count = 0
+        sum_precision = 0
+        for i in range(k):
+            if query_doc_IDs_ordered[i] in true_doc_IDs:
+                count += 1
+                sum_precision += self.queryPrecision(query_doc_IDs_ordered, query_id, true_doc_IDs, i)
 
-        avgPrecision = -1
+        avgPrecision = sum_precision / count
 
         # Fill in code here
 
@@ -301,7 +323,11 @@ class Evaluation:
 			The MAP value as a number between 0 and 1
 		"""
 
-        meanAveragePrecision = -1
+        sum_avergeprecision = 0
+        for query_no in range(len(query_ids)):
+            sum_avergeprecision += self.queryFscore(doc_IDs_ordered[query_no], query_ids[query_no],
+                                                    reslist(query_ids[query_no], q_rels), k)
+        meanAveragePrecision = sum_avergeprecision / len(query_ids)
 
         # Fill in code here
 

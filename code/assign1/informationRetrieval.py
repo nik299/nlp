@@ -1,8 +1,8 @@
 from util import *
 import pandas as pd
 import numpy as np
-
-
+from tqdm import tqdm
+import pickle
 # Add your import statements here
 
 
@@ -30,19 +30,29 @@ class InformationRetrieval():
 		-------
 		None
 		"""
-        vocab_list = []
-        for doc_ind in docs:
-            for sent in docs:
-                vocab_list = vocab_list + sent
+        self.docIDs = docIDs
+        try:
+            with open("vocab_list.txt", "rb") as fp:  # Unpickling
+                self.vocab_list = pickle.load(fp)
+        except IOError:
+            self.vocab_list = []
+            print(len(docs[1]))
+            for doc in tqdm(range(len(docs))):
+                for sent in docs[doc]:
+                    for word in sent:
+                        if word not in self.vocab_list:
+                            self.vocab_list.append(word)
+            self.vocab_list.sort()
+            with open("vocab_list.txt", "wb") as fp:  # Pickling
+                pickle.dump(self.vocab_list, fp)
 
-        vocab_list = list(set(vocab_list)).sort()
-        index_df = pd.DataFrame(data=np.zeros((len(vocab_list), len(docIDs) + 2)), index=vocab_list,
+        index_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(self.docIDs) + 2)), index=self.vocab_list,
                                 columns=docIDs + ['n_i', 'idf'])
-        for doc_ind in range(len(docs)):
+        for doc_ind in tqdm(range(len(docs))):
             p = 0
             for sent in docs[doc_ind]:
                 for word in sent:
-                    if word in vocab_list:
+                    if word in self.vocab_list:
                         index_df.loc[[word], [docIDs[doc_ind]]] += 1
                         if p == 0:
                             index_df.loc[[word], ['n_i']] += 1
@@ -55,8 +65,6 @@ class InformationRetrieval():
         # Fill in code here
 
         self.index = index
-        self.vocab_list = vocab_list
-        self.docIDs = docIDs
 
     def rank(self, queries):
         """
