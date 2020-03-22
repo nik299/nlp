@@ -26,13 +26,12 @@ def rellist(query_id, qrels):
     """
 
     :param query_id: int
-    :param pred_list:list
     :param qrels:
     :return:
     """
     rel_list = []
     for query_dict in qrels:
-        if query_dict['query_id'] == query_id:
+        if int(query_dict['query_num']) == query_id:
             rel_list.append(query_dict)
 
     return rel_list
@@ -47,11 +46,14 @@ def scoremake(pred_list, rel_list):
     """
     score_list = []
     for pred_id in pred_list:
+        p = 0
         for query_dict in rel_list:
-            if query_dict['id'] == pred_id:
-                score_list.append(5 - query_dict['position'])
-            else:
-                score_list.append(0)
+            if int(query_dict['id']) == pred_id:
+                p = 1
+                score_list.append(5 - int(query_dict['position']))
+                break
+        if p == 0:
+            score_list.append(0)
     return score_list
 
 
@@ -63,5 +65,7 @@ def dcg(score_list):
     """
     sumcg = 0
     for i in range(len(score_list)):
-        sumcg += score_list[i] / (np.log2(i + 2))
+        sumcg += (score_list[i] / (np.log2(i + 2)))
+#    if sumcg == 0 or np.isnan(sumcg) or np.isinf(sumcg):
+#        print(score_list, sumcg)
     return sumcg

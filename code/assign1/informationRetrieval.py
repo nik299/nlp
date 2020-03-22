@@ -48,15 +48,21 @@ class InformationRetrieval():
 
         index_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(self.docIDs) + 2)), index=self.vocab_list,
                                 columns=docIDs + ['n_i', 'idf'])
-        for doc_ind in tqdm(range(len(docs))):
-            p = 0
-            for sent in docs[doc_ind]:
-                for word in sent:
-                    if word in self.vocab_list:
-                        index_df.loc[[word], [docIDs[doc_ind]]] += 1
-                        if p == 0:
-                            index_df.loc[[word], ['n_i']] += 1
-                            p = 1
+        try:
+            with open("index_df.txt", "rb") as fp:  # Unpickling
+                index_df = pickle.load(fp)
+        except IOError:
+            for doc_ind in tqdm(range(len(docs))):
+                p = 0
+                for sent in docs[doc_ind]:
+                    for word in sent:
+                        if word in self.vocab_list:
+                            index_df.loc[[word], [docIDs[doc_ind]]] += 1
+                            if p == 0:
+                                index_df.loc[[word], ['n_i']] += 1
+                                p = 1
+            with open("index_df.txt", "wb") as fp:  # Pickling
+                pickle.dump(index_df, fp)
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
