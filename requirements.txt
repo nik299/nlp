@@ -1,6 +1,9 @@
 nltk
+numpy
 matplotlib
 pandas
+tqdm
+pickle-mixin
 #this ones are for testing
 Cython
 spacy

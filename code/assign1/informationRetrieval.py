@@ -36,7 +36,7 @@ class InformationRetrieval():
                 self.vocab_list = pickle.load(fp)
         except IOError:
             self.vocab_list = []
-            print(len(docs[1]))
+            print('building vocabulary')
             for doc in tqdm(range(len(docs))):
                 for sent in docs[doc]:
                     for word in sent:
@@ -52,6 +52,7 @@ class InformationRetrieval():
             with open("index_df.txt", "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
         except IOError:
+            print('creating tf-idf vectors for documents')
             for doc_ind in tqdm(range(len(docs))):
                 p = 0
                 for sent in docs[doc_ind]:
@@ -63,7 +64,7 @@ class InformationRetrieval():
                                 p = 1
             with open("index_df.txt", "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
-        index_df['idf'] = index_df['n_i'].apply(lambda x: np.log(len(docs) / x) if x > 0 else 0)
+        index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
         index = index_df
@@ -95,7 +96,8 @@ class InformationRetrieval():
         query_df['idf'] = self.index['idf']
         doc_mag = self.index[self.docIDs].mul(self.index[self.docIDs].to_numpy(), axis='rows').sum(axis=0) \
             .apply(np.sqrt)
-        for query_ind in range(len(queries)):
+        print('matching documents with queries')
+        for query_ind in tqdm(range(len(queries))):
             for sent in queries[query_ind]:
                 for word in sent:
                     if word in self.vocab_list:

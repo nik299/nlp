@@ -24,10 +24,13 @@ def reslist(query_id, qrels):
 
 def rellist(query_id, qrels):
     """
-
+    this function gives list of dictionaries which are relevant to a given query
     :param query_id: int
-    :param qrels:
-    :return:
+                    query no for which we are intrested
+    :param qrels: list of dict
+                    obtained from qrels.json
+    :return: rel_list: list of dict
+                    subset of qrels which have re for a single query
     """
     rel_list = []
     for query_dict in qrels:
@@ -39,10 +42,13 @@ def rellist(query_id, qrels):
 
 def scoremake(pred_list, rel_list):
     """
-
-    :param pred_list:
-    :param rel_list:
-    :return:
+     this function gives a
+    :param pred_list:list of int
+                        list of docIDs for which score is needed
+    :param rel_list: list of dict
+                        list of dictionaries for a given query
+    :return:score_list: list of int
+                        final score list
     """
     score_list = []
     for pred_id in pred_list:
