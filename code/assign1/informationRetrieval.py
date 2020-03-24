@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import pickle
+
+
 # Add your import statements here
 
 
@@ -16,14 +18,16 @@ class InformationRetrieval():
     def buildIndex(self, docs, docIDs):
         """
 		Builds the document index in terms of the document
-		IDs and stores it in the 'index' class variable
+		IDs and stores it in the 'index' class variable as a dataframe of tf-idf vectors along with idf scores to each
+		word and and also stores vocabulary in vocab_list
+		document number used in docIDs
 
 		Parameters
 		----------
 		docs : list
 			A list of lists of lists where each sub-list is
 			a document and each sub-sub-list is a sentence of the document
-			note: I am considering document position as document ID's #TODO
+			note: I am considering document position as document ID's
 		docIDs : list
 			A list of integers denoting IDs of the documents
 		Returns
@@ -67,11 +71,7 @@ class InformationRetrieval():
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
-        index = index_df
-
-        # Fill in code here
-
-        self.index = index
+        self.index = index_df
 
     def rank(self, queries):
         """
@@ -86,7 +86,7 @@ class InformationRetrieval():
 
 		Returns
 		-------
-		list
+		doc_IDs_ordered : list
 			A list of lists of integers where the ith sub-list is a list of IDs
 			of documents in their predicted order of relevance to the ith query
 		"""
@@ -104,9 +104,7 @@ class InformationRetrieval():
                         query_df.loc[[word], [query_ind]] += 1
             query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
             dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
-            dot_p = dot_p.div(doc_mag).fillna(0) / query_df[query_ind].mul(query_df[query_ind].to_numpy(), axis='rows')\
-                .sum(axis=0)
+            dot_p = dot_p.div(doc_mag).fillna(0) / query_df[query_ind] \
+                .mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
             doc_IDs_ordered.append(list(dot_p.loc[dot_p > 0].sort_values(ascending=False).index))
-        # Fill in code here
-
         return doc_IDs_ordered
