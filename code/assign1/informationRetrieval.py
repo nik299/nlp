@@ -104,7 +104,8 @@ class InformationRetrieval():
                         query_df.loc[[word], [query_ind]] += 1
             query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
             dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
-            dot_p = dot_p.div(doc_mag).fillna(0) / query_df[query_ind] \
-                .mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
+            dot_p = dot_p.div(doc_mag).fillna(0) / np.sqrt(query_df[query_ind]
+                                                           .mul(query_df[query_ind].to_numpy(), axis='rows')
+                                                           .sum(axis=0))
             doc_IDs_ordered.append(list(dot_p.loc[dot_p > 0].sort_values(ascending=False).index))
         return doc_IDs_ordered
