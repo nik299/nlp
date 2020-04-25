@@ -36,9 +36,9 @@ class InformationRetrieval():
 		"""
         self.docIDs = docIDs
         try:
-            with open("vocab_list.txt", "rb") as fp:  # Unpickling
+            with open(r"D:\PycharmProjects\nlp\code\assign1\vocab_list.txt", "rb") as fp:  # Unpickling
                 self.vocab_list = pickle.load(fp)
-        except IOError:
+        except IOError or FileNotFoundError:
             self.vocab_list = []
             print('building vocabulary')
             for doc in tqdm(range(len(docs))):
@@ -55,17 +55,17 @@ class InformationRetrieval():
         try:
             with open("index_df.txt", "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
-        except IOError:
+        except IOError or FileNotFoundError:
             print('creating tf-idf vectors for documents')
             for doc_ind in tqdm(range(len(docs))):
-                p = 0
+                word_list = []
                 for sent in docs[doc_ind]:
                     for word in sent:
                         if word in self.vocab_list:
                             index_df.loc[[word], [docIDs[doc_ind]]] += 1
-                            if p == 0:
+                            if word not in word_list:
                                 index_df.loc[[word], ['n_i']] += 1
-                                p = 1
+                                word_list.append(word)
             with open("index_df.txt", "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)

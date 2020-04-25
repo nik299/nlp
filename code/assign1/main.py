@@ -1,4 +1,5 @@
 from sentenceSegmentation import SentenceSegmentation
+from tokenizerLemmatizer import tokenizerLemmatizer
 from tokenization import Tokenization
 from inflectionReduction import InflectionReduction
 from stopwordRemoval import StopwordRemoval
@@ -28,6 +29,7 @@ class SearchEngine:
         self.args = args
 
         self.tokenizer = Tokenization()
+        self.tokenandlemmatizer = tokenizerLemmatizer()
         self.sentenceSegmenter = SentenceSegmentation()
         self.inflectionReducer = InflectionReduction()
         self.stopwordRemover = StopwordRemoval()
@@ -43,6 +45,9 @@ class SearchEngine:
             return self.sentenceSegmenter.naive(text)
         elif self.args.segmenter == "punkt":
             return self.sentenceSegmenter.punkt(text)
+
+    def tokenizeandlemmatize(self, text):
+        return self.tokenandlemmatizer.spacy_lemmatizer(text)
 
     def tokenize(self, text):
         """
@@ -78,8 +83,11 @@ class SearchEngine:
         json.dump(segmentedQueries, open(self.args.out_folder + "segmented_queries.txt", 'w'))
         # Tokenize queries
         tokenizedQueries = []
+        tokenized_lemmatizedQueries = []
         for query in segmentedQueries:
             tokenizedQuery = self.tokenize(query)
+            tokenized_lemmatizedQuery = self.tokenizeandlemmatize(query)
+            tokenized_lemmatizedQueries.append(tokenized_lemmatizedQuery)
             tokenizedQueries.append(tokenizedQuery)
         json.dump(tokenizedQueries, open(self.args.out_folder + "tokenized_queries.txt", 'w'))
         # Stem/Lemmatize queries
@@ -90,7 +98,7 @@ class SearchEngine:
         json.dump(reducedQueries, open(self.args.out_folder + "reduced_queries.txt", 'w'))
         # Remove stopwords from queries
         stopwordRemovedQueries = []
-        for query in reducedQueries:
+        for query in tokenized_lemmatizedQueries:
             stopwordRemovedQuery = self.removeStopwords(query)
             stopwordRemovedQueries.append(stopwordRemovedQuery)
         json.dump(stopwordRemovedQueries, open(self.args.out_folder + "stopword_removed_queries.txt", 'w'))
@@ -111,9 +119,12 @@ class SearchEngine:
         json.dump(segmentedDocs, open(self.args.out_folder + "segmented_docs.txt", 'w'))
         # Tokenize docs
         tokenizedDocs = []
+        tokenized_lemmatizedDocs = []
         for doc in segmentedDocs:
             tokenizedDoc = self.tokenize(doc)
+            tokenized_lemmatizedDoc = self.tokenizeandlemmatize(doc)
             tokenizedDocs.append(tokenizedDoc)
+            tokenized_lemmatizedDocs.append(tokenized_lemmatizedDoc)
         json.dump(tokenizedDocs, open(self.args.out_folder + "tokenized_docs.txt", 'w'))
         # Stem/Lemmatize docs
         reducedDocs = []
@@ -123,7 +134,7 @@ class SearchEngine:
         json.dump(reducedDocs, open(self.args.out_folder + "reduced_docs.txt", 'w'))
         # Remove stopwords from docs
         stopwordRemovedDocs = []
-        for doc in reducedDocs:
+        for doc in tokenized_lemmatizedDocs:
             stopwordRemovedDoc = self.removeStopwords(doc)
             stopwordRemovedDocs.append(stopwordRemovedDoc)
         json.dump(stopwordRemovedDocs, open(self.args.out_folder + "stopword_removed_docs.txt", 'w'))

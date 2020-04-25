@@ -227,6 +227,12 @@ class Evaluation:
         query_score_list = scoremake(query_doc_IDs_ordered[:k], true_doc_IDs)
         if sorted(query_score_list, reverse=True)[0] == 0:
             nDCG = 0
+            '''
+            if k == 10:
+                print('query id', query_id)
+                print([res['id'] for res in true_doc_IDs])
+                print(query_doc_IDs_ordered[:k])
+            '''
         else:
             nDCG = dcg(query_score_list) / dcg(sorted(query_score_list, reverse=True))
 

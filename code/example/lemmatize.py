@@ -7,8 +7,8 @@ nltk.download('wordnet')
 from nltk.stem import WordNetLemmatizer
 
 # run 'python -m spacy download en' if you have installed for the first time
-nlp = spacy.load('en')
-document = u"doctor operates on patient.Kidney operation is important. operational procedure. leaves and leaf"
+nlp = spacy.load('en_core_web_sm')
+document = u"doctor operates on patient.Kidney operation is important. operational procedure. leaves and leaf 99 fg"
 
 sb = SnowballStemmer('english')
 wn = WordNetLemmatizer()

@@ -6,6 +6,16 @@ from nltk.stem import SnowballStemmer
 
 
 class InflectionReduction:
+    def is_number(self, s):
+        try:
+            float(s)
+            return 'num11'
+        except ValueError:
+            try:
+                float(s.replace(',', '.'))
+                return 'num11'
+            except ValueError:
+                return s
 
     def reduce(self, text):
         """
@@ -27,7 +37,7 @@ class InflectionReduction:
 		"""
 
         sb = SnowballStemmer('english')
-        reducedText = [[sb.stem(word) for word in sent] for sent in text]
+        reducedText = [[self.is_number(sb.stem(word).replace('/', '').replace('-', '')) for word in sent] for sent in text]
 
         # Fill in code here
 
