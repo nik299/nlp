@@ -25,7 +25,8 @@ class tokenizerLemmatizer:
             doc = self.nlp(sent)
             for token in doc:
                 reduced_text.append([self.is_number(token.lemma_.replace('/', '').replace('-', ''))])
-                if token.dep_
+                if token.dep_ == 'noun':
+                    pass
             if root != '@@' or subject != '@@':
                 reduced_text.apppend(root+' '+subject)
         return reduced_text

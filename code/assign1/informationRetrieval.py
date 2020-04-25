@@ -36,7 +36,7 @@ class InformationRetrieval():
 		"""
         self.docIDs = docIDs
         try:
-            with open(r"D:\PycharmProjects\nlp\code\assign1\vocab_list.txt", "rb") as fp:  # Unpickling
+            with open(r"/vocab_list.pkl", "rb") as fp:  # Unpickling
                 self.vocab_list = pickle.load(fp)
         except IOError or FileNotFoundError:
             self.vocab_list = []
@@ -47,13 +47,13 @@ class InformationRetrieval():
                         if word not in self.vocab_list:
                             self.vocab_list.append(word)
             self.vocab_list.sort()
-            with open("vocab_list.txt", "wb") as fp:  # Pickling
+            with open("vocab_list.pkl", "wb") as fp:  # Pickling
                 pickle.dump(self.vocab_list, fp)
 
         index_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(self.docIDs) + 2)), index=self.vocab_list,
                                 columns=docIDs + ['n_i', 'idf'])
         try:
-            with open("index_df.txt", "rb") as fp:  # Unpickling
+            with open("index_df.pkl", "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
         except IOError or FileNotFoundError:
             print('creating tf-idf vectors for documents')
@@ -66,7 +66,7 @@ class InformationRetrieval():
                             if word not in word_list:
                                 index_df.loc[[word], ['n_i']] += 1
                                 word_list.append(word)
-            with open("index_df.txt", "wb") as fp:  # Pickling
+            with open("index_df.pkl", "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
