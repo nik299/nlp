@@ -72,7 +72,6 @@ class InformationRetrieval():
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
         self.index = index_df
-
     def rank(self, queries):
         """
 		Rank the documents according to relevance for each query

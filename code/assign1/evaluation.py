@@ -225,16 +225,18 @@ class Evaluation:
 			The nDCG value as a number between 0 and 1
 		"""
         query_score_list = scoremake(query_doc_IDs_ordered[:k], true_doc_IDs)
-        if sorted(query_score_list, reverse=True)[0] == 0:
+        true_doc_IDs_list = []
+        for true_doc_ID_dict in true_doc_IDs:
+            true_doc_IDs_list.append(int(true_doc_ID_dict['id']))
+        ideal_score_list = scoremake(true_doc_IDs_list, true_doc_IDs)
+        if sorted(ideal_score_list, reverse=True)[0] == 0:
             nDCG = 0
-            '''
             if k == 10:
                 print('query id', query_id)
                 print([res['id'] for res in true_doc_IDs])
-                print(query_doc_IDs_ordered[:k])
-            '''
+                print(true_doc_IDs_list)
         else:
-            nDCG = dcg(query_score_list) / dcg(sorted(query_score_list, reverse=True))
+            nDCG = dcg(query_score_list) / dcg(sorted(ideal_score_list, reverse=True)[:k])
 
         # Fill in code here
 
