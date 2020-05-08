@@ -5,7 +5,7 @@ from inflectionReduction import InflectionReduction
 from stopwordRemoval import StopwordRemoval
 from informationRetrieval import InformationRetrieval
 from evaluation import Evaluation
-
+from gensimvect import vectorizer
 from sys import version_info
 import argparse
 import json
@@ -33,7 +33,7 @@ class SearchEngine:
         self.sentenceSegmenter = SentenceSegmentation()
         self.inflectionReducer = InflectionReduction()
         self.stopwordRemover = StopwordRemoval()
-
+        self.vectorizer = vectorizer()
         self.informationRetriever = InformationRetrieval()
         self.evaluator = Evaluation()
 
@@ -167,42 +167,48 @@ class SearchEngine:
 
         # Build document index
         self.informationRetriever.buildIndex(processedDocs, doc_ids)
+
         # Rank the documents for each query
-        doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+
+        #self.vectorizer.build_index(processedDocs, doc_ids, 20)
+        #doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
 
         # Read relevance judements
         qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
 
         # Calculate precision, recall, f-score, MAP and nDCG for k = 1 to 10
         precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
-        for k in range(1, 11):
+        p = 11
+        for k in range(1, p):
+            self.informationRetriever.lsi(k*50)
+            doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
             precision = self.evaluator.meanPrecision(
-                doc_IDs_ordered, query_ids, qrels, k)
+                doc_IDs_ordered, query_ids, qrels, 10)
             precisions.append(precision)
             recall = self.evaluator.meanRecall(
-                doc_IDs_ordered, query_ids, qrels, k)
+                doc_IDs_ordered, query_ids, qrels, 10)
             recalls.append(recall)
             fscore = self.evaluator.meanFscore(
-                doc_IDs_ordered, query_ids, qrels, k)
+                doc_IDs_ordered, query_ids, qrels, 10)
             fscores.append(fscore)
             print("Precision, Recall and F-score @ " +
                   str(k) + " : " + str(precision) + ", " + str(recall) +
                   ", " + str(fscore))
             MAP = self.evaluator.meanAveragePrecision(
-                doc_IDs_ordered, query_ids, qrels, k)
+                doc_IDs_ordered, query_ids, qrels, 10)
             MAPs.append(MAP)
             nDCG = self.evaluator.meanNDCG(
-                doc_IDs_ordered, query_ids, qrels, k)
+                doc_IDs_ordered, query_ids, qrels, 10)
             nDCGs.append(nDCG)
             print("MAP, nDCG @ " +
                   str(k) + " : " + str(MAP) + ", " + str(nDCG))
 
         # Plot the metrics and save plot
-        plt.plot(range(1, 11), precisions, label="Precision")
-        plt.plot(range(1, 11), recalls, label="Recall")
-        plt.plot(range(1, 11), fscores, label="F-Score")
-        plt.plot(range(1, 11), MAPs, label="MAP")
-        plt.plot(range(1, 11), nDCGs, label="nDCG")
+        plt.plot(range(1, p), precisions, label="Precision")
+        plt.plot(range(1, p), recalls, label="Recall")
+        plt.plot(range(1, p), fscores, label="F-Score")
+        plt.plot(range(1, p), MAPs, label="MAP")
+        plt.plot(range(1, p), nDCGs, label="nDCG")
         plt.legend()
         plt.title("Evaluation Metrics - Cranfield Dataset")
         plt.xlabel("k")

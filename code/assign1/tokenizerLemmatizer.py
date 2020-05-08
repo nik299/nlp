@@ -33,6 +33,7 @@ class tokenizerLemmatizer:
             doc = self.nlp(sent)
             for token in doc:
                 if token.dep_ != 'punct':
+                    pass
                     reduced_sent.append(self.is_number(token.lemma_.replace('/', '').replace('-', '')))
                 '''
                 if token.dep_ == 'nsubj':
@@ -47,6 +48,8 @@ class tokenizerLemmatizer:
                     if token.pos_ == 'ADJ' and token.text in self.list1:
                         for token1 in phrase:
                             if token1.pos_ == 'NOUN':
-                                reduced_sent.append(token.lemma_+' '+token1.lemma_)
-            reduced_text.append(reduced_sent)
+                                reduced_sent.append(token.lemma_ + ' ' + token1.lemma_)
+            if len(reduced_sent) == 0:
+                reduced_sent.append('place_holder')
+            reduced_text += reduced_sent
         return reduced_text

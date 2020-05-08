@@ -302,9 +302,13 @@ class Evaluation:
         count = 1
         sum_precision = 0
         for i in range(k):
-            if query_doc_IDs_ordered[i] in true_doc_IDs:
-                count += 1
-                sum_precision += self.queryPrecision(query_doc_IDs_ordered, query_id, true_doc_IDs, i+1)
+            try:
+                if query_doc_IDs_ordered[i] in true_doc_IDs:
+                    count += 1
+                    sum_precision += self.queryPrecision(query_doc_IDs_ordered, query_id, true_doc_IDs, i + 1)
+            except IndexError:
+                count = k
+                break
 
         avgPrecision = sum_precision / count
 

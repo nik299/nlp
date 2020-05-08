@@ -24,7 +24,9 @@ class Tokenization():
 		"""
         pattern = r'\s+'
         regexp = RegexpTokenizer(pattern, gaps=True)
-        tokenizedText = [regexp.tokenize(a.replace(',', ' , ')) for a in text]
+        tokenizedText = []
+        for a in text:
+            tokenizedText += regexp.tokenize(a.replace(',', ' , '))
 
         # Fill in code here
 
@@ -45,7 +47,9 @@ class Tokenization():
 			A list of lists where each sub-list is a sequence of tokens
 		"""
         penn = TreebankWordTokenizer()
-        tokenizedText = [penn.tokenize(a) for a in text]
+        tokenizedText = []
+        for a in text:
+            tokenizedText += penn.tokenize(a)
 
         # Fill in code here
 

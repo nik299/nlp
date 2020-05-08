@@ -72,6 +72,17 @@ def dcg(score_list):
     sumcg = 0
     for i in range(len(score_list)):
         sumcg += (score_list[i] / (np.log2(i + 2)))
-#    if sumcg == 0 or np.isnan(sumcg) or np.isinf(sumcg):
-#        print(score_list, sumcg)
+    #    if sumcg == 0 or np.isnan(sumcg) or np.isinf(sumcg):
+    #        print(score_list, sumcg)
     return sumcg
+
+
+def retokenize(docs):
+    done_docs = []
+    for doc in docs:
+        done_doc = ''
+        for sent in doc:
+            done_sent = " ".join(str(x) for x in sent) + " "
+            done_doc = done_doc.join(done_sent)
+        done_docs.append(done_doc)
+    return done_docs

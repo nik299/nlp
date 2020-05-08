@@ -1,6 +1,7 @@
 from util import *
 import pandas as pd
 import numpy as np
+from scipy.linalg import svd
 from tqdm import tqdm
 import pickle
 
@@ -12,6 +13,7 @@ class InformationRetrieval():
 
     def __init__(self):
         self.index = None
+        self.ini_index = None
         self.vocab_list = None
         self.docIDs = None
 
@@ -42,10 +44,9 @@ class InformationRetrieval():
             self.vocab_list = []
             print('building vocabulary')
             for doc in tqdm(range(len(docs))):
-                for sent in docs[doc]:
-                    for word in sent:
-                        if word not in self.vocab_list:
-                            self.vocab_list.append(word)
+                for word in docs[doc]:
+                    if word not in self.vocab_list:
+                        self.vocab_list.append(word)
             self.vocab_list.sort()
             with open("vocab_list.pkl", "wb") as fp:  # Pickling
                 pickle.dump(self.vocab_list, fp)
@@ -59,19 +60,33 @@ class InformationRetrieval():
             print('creating tf-idf vectors for documents')
             for doc_ind in tqdm(range(len(docs))):
                 word_list = []
-                for sent in docs[doc_ind]:
-                    for word in sent:
-                        if word in self.vocab_list:
-                            index_df.loc[[word], [docIDs[doc_ind]]] += 1
-                            if word not in word_list:
-                                index_df.loc[[word], ['n_i']] += 1
-                                word_list.append(word)
+                for word in docs[doc_ind]:
+                    if word in self.vocab_list:
+                        index_df.loc[[word], [docIDs[doc_ind]]] += 1
+                        if word not in word_list:
+                            index_df.loc[[word], ['n_i']] += 1
+                            word_list.append(word)
             with open("index_df.pkl", "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
-        self.index = index_df
+        self.ini_index = index_df
+
+    def lsi(self, num_vec):
+        index_arr = self.ini_index.to_numpy()[:, :-2]
+        U, s, VT = svd(index_arr)
+        Sigma = np.zeros((index_arr.shape[0], index_arr.shape[1]))
+        Sigma[:index_arr.shape[1], :index_arr.shape[1]] = np.diag(s)
+        Sigma = Sigma[:, :num_vec]
+        VT = VT[:num_vec, :]
+        # reconstruct
+        B = U.dot(Sigma.dot(VT))
+        b_df = pd.DataFrame(data=B, index=self.vocab_list, columns=self.docIDs)
+        b_df['n_i'] = self.ini_index['n_i']
+        b_df['idf'] = self.ini_index['idf']
+        self.index = b_df
+
     def rank(self, queries):
         """
 		Rank the documents according to relevance for each query
@@ -97,10 +112,9 @@ class InformationRetrieval():
             .apply(np.sqrt)
         print('matching documents with queries')
         for query_ind in tqdm(range(len(queries))):
-            for sent in queries[query_ind]:
-                for word in sent:
-                    if word in self.vocab_list:
-                        query_df.loc[[word], [query_ind]] += 1
+            for word in queries[query_ind]:
+                if word in self.vocab_list:
+                    query_df.loc[[word], [query_ind]] += 1
             query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
             dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)
             dot_p = dot_p.div(doc_mag).fillna(0) / np.sqrt(query_df[query_ind]

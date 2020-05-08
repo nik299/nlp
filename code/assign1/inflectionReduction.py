@@ -37,7 +37,7 @@ class InflectionReduction:
 		"""
 
         sb = SnowballStemmer('english')
-        reducedText = [[self.is_number(sb.stem(word).replace('/', '').replace('-', '')) for word in sent] for sent in text]
+        reducedText = [self.is_number(sb.stem(word).replace('/', '').replace('-', '')) for word in text]
 
         # Fill in code here
 

@@ -27,7 +27,7 @@ class StopwordRemoval():
 		"""
 
         stop_words = set(stopwords.words('english')+['', ' ', '  ', "'", "'s", '.', '=', 'PRON', 'a.'])
-        stopwordRemovedText = [[w for w in sent if w.split('@@')[0] not in stop_words] for sent in text]
+        stopwordRemovedText = [w for w in text if w.split('@@')[0] not in stop_words]
 
         # Fill in code here
 
