@@ -166,12 +166,14 @@ class SearchEngine:
         processedDocs = self.preprocessDocs(docs)
 
         # Build document index
-        self.informationRetriever.buildIndex(processedDocs, doc_ids)
+        self.informationRetriever.buildIndex1(processedDocs, doc_ids)
+        #self.informationRetriever.lsi(410)
 
+        self.informationRetriever.no_lsi()
         # Rank the documents for each query
-
-        #self.vectorizer.build_index(processedDocs, doc_ids, 20)
-        #doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
+        doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+        # self.vectorizer.build_index(processedDocs, doc_ids, 20)
+        # doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
 
         # Read relevance judements
         qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
@@ -180,25 +182,24 @@ class SearchEngine:
         precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
         p = 11
         for k in range(1, p):
-            self.informationRetriever.lsi(k*50)
-            doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+
             precision = self.evaluator.meanPrecision(
-                doc_IDs_ordered, query_ids, qrels, 10)
+                doc_IDs_ordered, query_ids, qrels, k)
             precisions.append(precision)
             recall = self.evaluator.meanRecall(
-                doc_IDs_ordered, query_ids, qrels, 10)
+                doc_IDs_ordered, query_ids, qrels, k)
             recalls.append(recall)
             fscore = self.evaluator.meanFscore(
-                doc_IDs_ordered, query_ids, qrels, 10)
+                doc_IDs_ordered, query_ids, qrels, k)
             fscores.append(fscore)
             print("Precision, Recall and F-score @ " +
                   str(k) + " : " + str(precision) + ", " + str(recall) +
                   ", " + str(fscore))
             MAP = self.evaluator.meanAveragePrecision(
-                doc_IDs_ordered, query_ids, qrels, 10)
+                doc_IDs_ordered, query_ids, qrels, k)
             MAPs.append(MAP)
             nDCG = self.evaluator.meanNDCG(
-                doc_IDs_ordered, query_ids, qrels, 10)
+                doc_IDs_ordered, query_ids, qrels, k)
             nDCGs.append(nDCG)
             print("MAP, nDCG @ " +
                   str(k) + " : " + str(MAP) + ", " + str(nDCG))

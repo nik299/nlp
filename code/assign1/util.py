@@ -2,6 +2,10 @@
 import numpy as np
 
 
+def dummy(doc):
+    return doc
+
+
 # Add any utility functions here
 
 def reslist(query_id, qrels):
@@ -71,7 +75,7 @@ def dcg(score_list):
     """
     sumcg = 0
     for i in range(len(score_list)):
-        sumcg += (score_list[i] / (np.log2(i + 2)))
+        sumcg += (((2 ** score_list[i]) - 1) / (np.log2(i + 2)))
     #    if sumcg == 0 or np.isnan(sumcg) or np.isinf(sumcg):
     #        print(score_list, sumcg)
     return sumcg

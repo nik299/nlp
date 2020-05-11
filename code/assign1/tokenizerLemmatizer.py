@@ -31,10 +31,13 @@ class tokenizerLemmatizer:
             root = '@@'
             subject = '@@'
             doc = self.nlp(sent)
+            bi1 = ''
+            bi2 = ''
             for token in doc:
                 if token.dep_ != 'punct':
-                    pass
-                    reduced_sent.append(self.is_number(token.lemma_.replace('/', '').replace('-', '')))
+                    uni_word = self.is_number(token.lemma_.replace('/', '').replace('-', ''))
+                    reduced_sent.append(uni_word)
+
                 '''
                 if token.dep_ == 'nsubj':
                     subject = token.lemma_
@@ -42,7 +45,7 @@ class tokenizerLemmatizer:
                     root = token.lemma_
             if root != '@@' and subject != '@@':
                 reduced_sent.append(root + ' ' + subject)
-            '''
+            
             for phrase in doc.noun_chunks:
                 for token in phrase:
                     if token.pos_ == 'ADJ' and token.text in self.list1:
@@ -51,5 +54,7 @@ class tokenizerLemmatizer:
                                 reduced_sent.append(token.lemma_ + ' ' + token1.lemma_)
             if len(reduced_sent) == 0:
                 reduced_sent.append('place_holder')
+            '''
+
             reduced_text += reduced_sent
         return reduced_text

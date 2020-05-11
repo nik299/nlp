@@ -4,7 +4,10 @@ import numpy as np
 from scipy.linalg import svd
 from tqdm import tqdm
 import pickle
-
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.pipeline import Pipeline
+from util import dummy
 
 # Add your import statements here
 
@@ -16,6 +19,7 @@ class InformationRetrieval():
         self.ini_index = None
         self.vocab_list = None
         self.docIDs = None
+        self.pipe = None
 
     def buildIndex(self, docs, docIDs):
         """
@@ -61,7 +65,7 @@ class InformationRetrieval():
             for doc_ind in tqdm(range(len(docs))):
                 word_list = []
                 for word in docs[doc_ind]:
-                    if word in self.vocab_list:
+                    if word in list(index_df.index):
                         index_df.loc[[word], [docIDs[doc_ind]]] += 1
                         if word not in word_list:
                             index_df.loc[[word], ['n_i']] += 1
@@ -71,10 +75,21 @@ class InformationRetrieval():
         index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
         index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
 
+        self.ini_index = index_df.loc[index_df['n_i'] > 2]
+
+    def buildIndex1(self, docs, docIDs):
+        self.docIDs = docIDs
+        self.pipe = Pipeline([('count', CountVectorizer(tokenizer=dummy, preprocessor=dummy, )),
+                         ('tfid', TfidfTransformer())]).fit(docs)
+        X = self.pipe['count'].transform(docs)
+        df = pd.DataFrame(X.toarray(), columns=self.pipe['count'].get_feature_names())
+        index_df = df.transpose()
+        index_df.columns = docIDs
+        index_df['idf'] = self.pipe['tfid'].idf_
         self.ini_index = index_df
 
     def lsi(self, num_vec):
-        index_arr = self.ini_index.to_numpy()[:, :-2]
+        index_arr = self.ini_index.to_numpy()[:, :-1]
         U, s, VT = svd(index_arr)
         Sigma = np.zeros((index_arr.shape[0], index_arr.shape[1]))
         Sigma[:index_arr.shape[1], :index_arr.shape[1]] = np.diag(s)
@@ -82,10 +97,14 @@ class InformationRetrieval():
         VT = VT[:num_vec, :]
         # reconstruct
         B = U.dot(Sigma.dot(VT))
-        b_df = pd.DataFrame(data=B, index=self.vocab_list, columns=self.docIDs)
-        b_df['n_i'] = self.ini_index['n_i']
+        b_df = pd.DataFrame(data=B, index=list(self.ini_index.index), columns=self.docIDs)
+        # b_df['n_i'] = self.ini_index['n_i']
         b_df['idf'] = self.ini_index['idf']
         self.index = b_df
+
+    def no_lsi(self):
+        self.index = self.ini_index
+
 
     def rank(self, queries):
         """
@@ -105,15 +124,16 @@ class InformationRetrieval():
 			of documents in their predicted order of relevance to the ith query
 		"""
         doc_IDs_ordered = []
-        query_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(queries))),
-                                index=self.vocab_list, columns=range(len(queries)))
+        query_df = pd.DataFrame(data=np.zeros((len(list(self.index.index)), len(queries))),
+                                index=list(self.index.index), columns=range(len(queries)))
         query_df['idf'] = self.index['idf']
+
         doc_mag = self.index[self.docIDs].mul(self.index[self.docIDs].to_numpy(), axis='rows').sum(axis=0) \
             .apply(np.sqrt)
         print('matching documents with queries')
         for query_ind in tqdm(range(len(queries))):
             for word in queries[query_ind]:
-                if word in self.vocab_list:
+                if word in list(self.index.index):
                     query_df.loc[[word], [query_ind]] += 1
             query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
             dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows').sum(axis=0)

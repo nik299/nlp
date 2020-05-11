@@ -4,7 +4,9 @@ numpy
 matplotlib
 pandas
 tqdm
+scipy
 pickle-mixin
 #this ones are for testing
 Cython
 spacy
+scikit-learn
