@@ -233,11 +233,14 @@ class Evaluation:
             nDCG = 0
             if k == 10:
                 print('query id', query_id)
-                print([res['id'] for res in true_doc_IDs])
+                print([res['id'] + ':' + res['position'] for res in true_doc_IDs])
                 print(true_doc_IDs_list)
         else:
             nDCG = dcg(query_score_list) / dcg(sorted(ideal_score_list, reverse=True)[:k])
-
+        if k == 10:
+            print('query id', query_id)
+            print([str(res['id']) + ':' + str(res['position']) for res in true_doc_IDs])
+            print(query_doc_IDs_ordered[:10])
         # Fill in code here
 
         return nDCG

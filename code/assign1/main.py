@@ -7,6 +7,7 @@ from informationRetrieval import InformationRetrieval
 from evaluation import Evaluation
 from gensimvect import vectorizer
 from sys import version_info
+from nltk.wsd import lesk
 import argparse
 import json
 import matplotlib.pyplot as plt
@@ -156,25 +157,33 @@ class SearchEngine:
         query_ids, queries = [item["query number"] for item in queries_json], \
                              [item["query"] for item in queries_json]
         # Process queries
-        processedQueries = self.preprocessQueries(queries)
+        #processedQueries = self.preprocessQueries(queries)
 
         # Read documents
         docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
-        doc_ids, docs = [item["id"] for item in docs_json], \
-                        [item["body"] for item in docs_json]
+        doc_ids, docs, titles = [item["id"] for item in docs_json], \
+                                [item["body"] for item in docs_json], [item['title'] for item in
+                                                                                             docs_json]
         # Process documents
+        '''
         processedDocs = self.preprocessDocs(docs)
+        processedTitles = self.preprocessDocs(titles)
 
         # Build document index
         self.informationRetriever.buildIndex1(processedDocs, doc_ids)
-        #self.informationRetriever.lsi(410)
+        self.informationRetriever.buildTitleIndex1(processedTitles)
 
-        self.informationRetriever.no_lsi()
+        self.informationRetriever.sk_lsi(395)
+        self.informationRetriever.combine(0.2)
+        # self.informationRetriever.no_lsi()
         # Rank the documents for each query
         doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
         # self.vectorizer.build_index(processedDocs, doc_ids, 20)
         # doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
-
+        '''
+        import pickle
+        with open(r"C:\Users\varun\AppData\Roaming\JetBrains\PyCharm2020.1\scratches\final_list.pkl", "rb") as fp:  # Pickling
+            doc_IDs_ordered = pickle.load(fp)
         # Read relevance judements
         qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
 
@@ -182,7 +191,6 @@ class SearchEngine:
         precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
         p = 11
         for k in range(1, p):
-
             precision = self.evaluator.meanPrecision(
                 doc_IDs_ordered, query_ids, qrels, k)
             precisions.append(precision)
