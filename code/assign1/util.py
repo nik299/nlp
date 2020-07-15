@@ -1,18 +1,25 @@
 # Add your import statements here
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def dummy(doc):
+    """
+    used for sklearn place holder
+    :param doc:
+    :return: same as doc
+    """
     return doc
 
 
 # Add any utility functions here
 
-def reslist(query_id, qrels):
+def doc_id_list(query_id, qrels):
     """
     this function gives a list of relevant doc_ids from qrels for a query
-    note the list returned may not be in order
-    :param query_id:int
+    note the list returned may not be in order of importance
+    :param query_id: int
                     id of query for which we need list
     :param qrels: list
                     list of dictionaries in format
@@ -26,7 +33,7 @@ def reslist(query_id, qrels):
     return true_doc_IDs
 
 
-def rellist(query_id, qrels):
+def dict_list(query_id, qrels):
     """
     this function gives list of dictionaries which are relevant to a given query
     :param query_id: int
@@ -46,13 +53,13 @@ def rellist(query_id, qrels):
 
 def scoremake(pred_list, rel_list):
     """
-     this function gives a
+     this is a helper function used to covert scores in qrels.json to 5,4,3,2,1,0 format with 5 being most relevant
+     and 0 being not relevant
     :param pred_list:list of int
                         list of docIDs for which score is needed
     :param rel_list: list of dict
                         list of dictionaries for a given query
-    :return:score_list: list of int
-                        final score list
+    :return: a list in which ith entry is score of ith docID in pred_list
     """
     score_list = []
     for pred_id in pred_list:
@@ -69,8 +76,8 @@ def scoremake(pred_list, rel_list):
 
 def dcg(score_list):
     """
-
-    :param score_list:
+    performs dcg on a list of scores assuming they are in ascending  order
+    :param score_list: list of int
     :return:sumcg:float
     """
     sumcg = 0
@@ -82,6 +89,11 @@ def dcg(score_list):
 
 
 def retokenize(docs):
+    """
+
+    :param docs:
+    :return:
+    """
     done_docs = []
     for doc in docs:
         done_doc = ''
@@ -90,3 +102,24 @@ def retokenize(docs):
             done_doc = done_doc.join(done_sent)
         done_docs.append(done_doc)
     return done_docs
+
+
+def word_pool(docs):
+    """
+    pools all the words in a list for each sentence to a list for each doc for all docs
+    :param docs: a list of docs in which each doc is a list of sentences which are lists of words
+    :return: a list of docs in which each doc is a list of words
+    """
+    new_docs = []
+    for doc in docs:
+        new_doc = []
+        for sentence in doc:
+            new_doc += sentence
+        new_docs.append(new_doc)
+    return new_docs
+
+
+def dist_plot(x, bins):
+    # Plot Histogram on x
+    y = np.array(x)
+    sns.distplot(y).get_figure().savefig(r"D:\PycharmProjects\nlp\output\query_plot.png")

@@ -1,9 +1,13 @@
 import spacy
+from nltk.wsd import lesk
 
 
 class tokenizerLemmatizer:
 
     def __init__(self):
+        """
+        some does't make sense but they are mostly not used for now
+        """
         self.nlp = spacy.load('en_core_web_sm')
         self.list1 = ['aerodynamic', 'approximate', 'axial', 'blunt', 'boundary', 'certain', 'circular', 'compressible',
                       'constant', 'different', 'dimensional', 'exact', 'experimental', 'first', 'flat', 'free',
@@ -11,8 +15,29 @@ class tokenizerLemmatizer:
                       'normal', 'numerical', 'particular', 'possible', 'present', 'several', 'similar', 'simple',
                       'small', 'steady', 'subsonic', 'supersonic', 'theoretical', 'thin', 'turbulent', 'uniform',
                       'various', 'viscous']
+        self.pos_dict = dict(
+            {"": None, "ADJ": 'a', "ADP": None, "ADV": 'r', "AUX": None, "CONJ": None, "CCONJ": None, "DET": None,
+             "INTJ": None,
+             "NOUN": 'n',
+             "NUM": None,
+             "PART": None,
+             "PRON": 'n',
+             "PROPN": 'n',
+             "PUNCT": None,
+             "SCONJ": None,
+             "SYM": None,
+             "VERB": 'v',
+             "X": None,
+             "EOL": None,
+             "SPACE": None
+             })
 
     def is_number(self, s):
+        """
+        labels all number found as tokens as 'num11'
+        :param s:
+        :return:
+        """
         try:
             float(s)
             return 'num11'
@@ -23,19 +48,31 @@ class tokenizerLemmatizer:
             except ValueError:
                 return s
 
-    def spacy_lemmatizer(self, text):
+    def spacy_lemmatizer(self, docs):
+        """
+
+        :param docs: a list of sentences as strings
+        :return: a list of lists in which each ith sublist is a list of strings in this format word^_*synset
+        """
         reduced_text = []
-        for sent in text:
+        for sent in docs:
             sent = sent.replace('/', '').replace('(', '').replace(')', '')
             reduced_sent = []
             root = '@@'
             subject = '@@'
-            doc = self.nlp(sent)
+            procesed_sent = self.nlp(sent)
             bi1 = ''
             bi2 = ''
-            for token in doc:
+            for token in procesed_sent:
                 if token.dep_ != 'punct':
                     uni_word = self.is_number(token.lemma_.replace('/', '').replace('-', ''))
+                    try:
+                        uni_word = uni_word + '^_*' + lesk(sent, uni_word).name()
+                    except AttributeError:
+                        try:
+                            uni_word = uni_word + '^_*' + lesk(uni_word, uni_word).name()
+                        except AttributeError:
+                            uni_word = uni_word + '^_*' + uni_word
                     reduced_sent.append(uni_word)
 
                 '''
@@ -45,6 +82,7 @@ class tokenizerLemmatizer:
                     root = token.lemma_
             if root != '@@' and subject != '@@':
                 reduced_sent.append(root + ' ' + subject)
+     
             
             for phrase in doc.noun_chunks:
                 for token in phrase:
@@ -56,5 +94,5 @@ class tokenizerLemmatizer:
                 reduced_sent.append('place_holder')
             '''
 
-            reduced_text += reduced_sent
+            reduced_text.append(reduced_sent)
         return reduced_text

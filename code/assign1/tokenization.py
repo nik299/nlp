@@ -48,8 +48,8 @@ class Tokenization():
 		"""
         penn = TreebankWordTokenizer()
         tokenizedText = []
-        for a in text:
-            tokenizedText += penn.tokenize(a)
+        for sentence in text:
+            tokenizedText += penn.tokenize(sentence)
 
         # Fill in code here
 
