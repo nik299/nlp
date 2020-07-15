@@ -7,10 +7,12 @@ from informationRetrieval import InformationRetrieval
 from evaluation import Evaluation
 from gensimvect import vectorizer
 from sys import version_info
+import pickle
 from nltk.wsd import lesk
 import argparse
 import json
 import matplotlib.pyplot as plt
+from util import word_pool
 
 # Input compatibility for Python 2 and Python 3
 if version_info.major == 3:
@@ -107,7 +109,7 @@ class SearchEngine:
         preprocessedQueries = stopwordRemovedQueries
         return preprocessedQueries
 
-    def preprocessDocs(self, docs):
+    def preprocessDocs(self, docs, title=False):
         """
 		Preprocess the documents
 		"""
@@ -117,7 +119,8 @@ class SearchEngine:
         for doc in docs:
             segmentedDoc = self.segmentSentences(doc)
             segmentedDocs.append(segmentedDoc)
-        json.dump(segmentedDocs, open(self.args.out_folder + "segmented_docs.txt", 'w'))
+        if not title:
+            json.dump(segmentedDocs[0], open(self.args.out_folder + "segmented_docs.txt", 'w'))
         # Tokenize docs
         tokenizedDocs = []
         tokenized_lemmatizedDocs = []
@@ -126,19 +129,22 @@ class SearchEngine:
             tokenized_lemmatizedDoc = self.tokenizeandlemmatize(doc)
             tokenizedDocs.append(tokenizedDoc)
             tokenized_lemmatizedDocs.append(tokenized_lemmatizedDoc)
-        json.dump(tokenizedDocs, open(self.args.out_folder + "tokenized_docs.txt", 'w'))
+        if not title:
+            json.dump(tokenizedDocs[0], open(self.args.out_folder + "tokenized_docs.txt", 'w'))
         # Stem/Lemmatize docs
         reducedDocs = []
         for doc in tokenizedDocs:
             reducedDoc = self.reduceInflection(doc)
             reducedDocs.append(reducedDoc)
-        json.dump(reducedDocs, open(self.args.out_folder + "reduced_docs.txt", 'w'))
+        if not title:
+            json.dump(reducedDocs[0], open(self.args.out_folder + "reduced_docs.txt", 'w'))
         # Remove stopwords from docs
         stopwordRemovedDocs = []
         for doc in tokenized_lemmatizedDocs:
             stopwordRemovedDoc = self.removeStopwords(doc)
             stopwordRemovedDocs.append(stopwordRemovedDoc)
-        json.dump(stopwordRemovedDocs, open(self.args.out_folder + "stopword_removed_docs.txt", 'w'))
+        if not title:
+            json.dump(stopwordRemovedDocs[0], open(self.args.out_folder + "stopword_removed_docs.txt", 'w'))
 
         preprocessedDocs = stopwordRemovedDocs
         return preprocessedDocs
@@ -157,33 +163,33 @@ class SearchEngine:
         query_ids, queries = [item["query number"] for item in queries_json], \
                              [item["query"] for item in queries_json]
         # Process queries
-        #processedQueries = self.preprocessQueries(queries)
+        processedQueries = self.preprocessQueries(queries)
 
         # Read documents
         docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
         doc_ids, docs, titles = [item["id"] for item in docs_json], \
                                 [item["body"] for item in docs_json], [item['title'] for item in
-                                                                                             docs_json]
+                                                                       docs_json]
         # Process documents
-        '''
         processedDocs = self.preprocessDocs(docs)
-        processedTitles = self.preprocessDocs(titles)
+        processedTitles = self.preprocessDocs(titles, title=True)
 
         # Build document index
-        self.informationRetriever.buildIndex1(processedDocs, doc_ids)
-        self.informationRetriever.buildTitleIndex1(processedTitles)
+        self.informationRetriever.buildIndex1(word_pool(processedDocs), doc_ids)
+        self.informationRetriever.buildIndex2(word_pool(processedDocs), doc_ids)
+        self.informationRetriever.buildTitleIndex1(word_pool(processedTitles))
 
         self.informationRetriever.sk_lsi(395)
+        self.informationRetriever.sk_lsi_bi(395)
         self.informationRetriever.combine(0.2)
         # self.informationRetriever.no_lsi()
         # Rank the documents for each query
-        doc_IDs_ordered = self.informationRetriever.rank(processedQueries)
+        doc_IDs_ordered = self.informationRetriever.rank(word_pool(processedQueries))
         # self.vectorizer.build_index(processedDocs, doc_ids, 20)
         # doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
-        '''
         import pickle
-        with open(r"C:\Users\varun\AppData\Roaming\JetBrains\PyCharm2020.1\scratches\final_list.pkl", "rb") as fp:  # Pickling
-            doc_IDs_ordered = pickle.load(fp)
+        with open("doc_Ids.pkl", "wb") as fp:  # Pickling
+            pickle.dump(doc_IDs_ordered, fp)
         # Read relevance judements
         qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
 
@@ -236,13 +242,32 @@ class SearchEngine:
 
         # Read documents
         docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
-        doc_ids, docs = [item["id"] for item in docs_json], \
-                        [item["body"] for item in docs_json]
+        doc_ids, docs, titles = [item["id"] for item in docs_json], \
+                                [item["body"] for item in docs_json], [item['title'] for item in
+                                                                       docs_json]
         # Process documents
-        processedDocs = self.preprocessDocs(docs)
+        try:
+            with open("index_df1.pkl", "rb") as fp:  # Unpickling
+                index_df = pickle.load(fp)
+            with open("pipeline.pkl", "rb") as fp:
+                pipe = pickle.load(fp)
+            processedDocs = [""]
+        except IOError or FileNotFoundError:
+            processedDocs = self.preprocessDocs(docs)
+
+        try:
+            with open("title_index_df1.pkl", "rb") as fp:  # Unpickling
+                index_df = pickle.load(fp)
+            processedTitles = [""]
+        except IOError or FileNotFoundError:
+            processedTitles = self.preprocessDocs(titles)
 
         # Build document index
-        self.informationRetriever.buildIndex(processedDocs, doc_ids)
+        self.informationRetriever.buildIndex1(processedDocs, doc_ids)
+        self.informationRetriever.buildTitleIndex1(processedTitles)
+
+        self.informationRetriever.sk_lsi(395)
+        self.informationRetriever.combine(0.2)
         # Rank the documents for the query
         doc_IDs_ordered = self.informationRetriever.rank([processedQuery])[0]
 

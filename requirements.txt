@@ -10,3 +10,4 @@ pickle-mixin
 Cython
 spacy
 scikit-learn
+seaborn

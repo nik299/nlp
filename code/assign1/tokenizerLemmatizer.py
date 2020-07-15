@@ -5,6 +5,9 @@ from nltk.wsd import lesk
 class tokenizerLemmatizer:
 
     def __init__(self):
+        """
+        some does't make sense but they are mostly not used for now
+        """
         self.nlp = spacy.load('en_core_web_sm')
         self.list1 = ['aerodynamic', 'approximate', 'axial', 'blunt', 'boundary', 'certain', 'circular', 'compressible',
                       'constant', 'different', 'dimensional', 'exact', 'experimental', 'first', 'flat', 'free',
@@ -30,6 +33,11 @@ class tokenizerLemmatizer:
              })
 
     def is_number(self, s):
+        """
+        labels all number found as tokens as 'num11'
+        :param s:
+        :return:
+        """
         try:
             float(s)
             return 'num11'
@@ -41,6 +49,11 @@ class tokenizerLemmatizer:
                 return s
 
     def spacy_lemmatizer(self, docs):
+        """
+
+        :param docs: a list of sentences as strings
+        :return: a list of lists in which each ith sublist is a list of strings in this format word^_*synset
+        """
         reduced_text = []
         for sent in docs:
             sent = sent.replace('/', '').replace('(', '').replace(')', '')
@@ -81,5 +94,5 @@ class tokenizerLemmatizer:
                 reduced_sent.append('place_holder')
             '''
 
-            reduced_text += reduced_sent
+            reduced_text.append(reduced_sent)
         return reduced_text
