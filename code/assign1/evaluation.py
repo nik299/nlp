@@ -1,5 +1,6 @@
 from util import *
 import json
+import os
 import pickle
 
 
@@ -8,7 +9,12 @@ import pickle
 
 class Evaluation:
 
-    def queryPrecision(self, query_doc_ids_ordered, query_id, true_doc_IDs, k):
+    def __init__(self, cache_dir, main_args):
+
+        self.args = main_args
+        self.root_folder = cache_dir
+
+    def queryPrecision(self, query_doc_ids_ordered, query_id, true_doc_ids, k):
         """
 		Computation of precision of the Information Retrieval System
 		at a given value of k for a single query
@@ -20,7 +26,7 @@ class Evaluation:
 			their predicted order of relevance to a query
 		query_id : int
 			The ID of the query in question
-		true_doc_IDs : list
+		true_doc_ids : list
 			The list of IDs as integers(check) of documents relevant to the query (ground truth)
 		k : int
 			The k value
@@ -31,7 +37,7 @@ class Evaluation:
 			The precision value as a number between 0 and 1
 		"""
 
-        precision = len(list(set(query_doc_ids_ordered[:k]).intersection(true_doc_IDs))) / k
+        precision = len(list(set(query_doc_ids_ordered[:k]).intersection(true_doc_ids))) / k
 
         # Fill in code here
 
@@ -241,16 +247,16 @@ class Evaluation:
         else:
             nDCG = dcg(query_score_list) / dcg(sorted(ideal_score_list, reverse=True)[:k])
         if k == 10:
-            with open(r"D:\PycharmProjects\nlp\code\assign1\dotp.pkl", "rb") as fp:
+            with open(os.path.join(self.root_folder, "dotp.pkl"), "rb") as fp:
                 docid = pickle.load(fp)
-            queries_json = json.load(open(r"D:\PycharmProjects\nlp\cranfield\cran_queries.json", 'r'))[:]
+            queries_json = json.load(open(os.path.join(self.args.dataset, "cran_queries.json"), 'r'))[:]
             query_ids, queries = [item["query number"] for item in queries_json], \
                                  [item["query"] for item in queries_json]
             print('query id', query_id, str(nDCG)[:6])
             print(queries[int(query_id) - 1])
-            print([str(res['id']) + ':' + str(res['position'])+':'+str(docid[int(query_id) - 1][int(res['id'])])[:6]
+            print([str(res['id']) + ':' + str(res['position']) + ':' + str(docid[int(query_id) - 1][int(res['id'])])[:6]
                    for res in true_doc_ids])
-            print([str(doc)+':'+str(docid[int(query_id) - 1][int(doc)])[:6] for doc in query_doc_ids_ordered[:k]])
+            print([str(doc) + ':' + str(docid[int(query_id) - 1][int(doc)])[:6] for doc in query_doc_ids_ordered[:k]])
         # Fill in code here
         return nDCG
 
@@ -287,7 +293,7 @@ class Evaluation:
             ndcg_list.append(ndcg)
         meanNDCG = sum_ndcg / len(query_ids)
         if k == 10:
-            dist_plot(ndcg_list, 50)
+            dist_plot(ndcg_list, 50,os.path.join(self.args.out_folder, 'query_plot.png'))
         # Fill in code here
 
         return meanNDCG

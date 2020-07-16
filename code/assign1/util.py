@@ -119,7 +119,7 @@ def word_pool(docs):
     return new_docs
 
 
-def dist_plot(x, bins):
+def dist_plot(x, bins,addr):
     # Plot Histogram on x
     y = np.array(x)
-    sns.distplot(y).get_figure().savefig(r"D:\PycharmProjects\nlp\output\query_plot.png")
+    sns.distplot(y).get_figure().savefig(addr)
