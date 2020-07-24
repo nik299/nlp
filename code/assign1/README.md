@@ -14,10 +14,14 @@ for first time 2 files will be created at running location named 'vocab_list.txt
 while  the code is running the program will print some statements in console just to indicate which part of code is 
 running and how much is progressed 
 
-## final remarks 
-rest all parts is same and code can run as per regular instructions.
+## sample Instruction
 
+for evaluation
+main.py -dataset [insert your data directory] -out_folder [insert your output directory] -cache_path [insert your directory in which program will save all pickle files] -baseline [put True if you want to get assignment 2 reading] 
 
-
+note: 
+1. if -cache_path is not mentioned program will save in directory in which file is executed
+2. -baseline default is False
+3. donot add any / or \ after the last directory use D:\PycharmProjects\nlp\cranfield instead of D:\PycharmProjects\nlp\cranfield\
 
 
