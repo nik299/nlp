@@ -7,7 +7,7 @@ all packages imported for this assignment are written in requirements.txt make s
 ## usage of pickle
 
 pickle package is used to speedup the building of tf-idf scores for all documents after 2nd run so,after running main.py 
-for first time 2 files will be created at running location named 'vocab_list.txt' and 'index_df.txt' 
+for first time a directory named cache will be prepared.
 
 ## usage of tqdm and console output
 
