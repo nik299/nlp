@@ -4,6 +4,7 @@ import numpy as np
 from scipy.linalg import svd
 from tqdm import tqdm
 import pickle
+import os
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import TruncatedSVD
@@ -15,9 +16,11 @@ from util import dummy
 # Add your import statements here
 
 
-class InformationRetrieval():
+class InformationRetrieval:
 
-    def __init__(self):
+    def __init__(self, take_base_line, cache_folder):
+        self.baseline = take_base_line
+        self.root_folder = cache_folder
         self.pipe_bi = None
         self.index = None
         self.index_bi = None
@@ -50,7 +53,7 @@ class InformationRetrieval():
 		"""
         self.docIDs = docIDs
         try:
-            with open(r"vocab_list.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.root_folder, "vocab_list_baseline.pkl"), "rb") as fp:  # Unpickling
                 self.vocab_list = pickle.load(fp)
         except IOError or FileNotFoundError:
             self.vocab_list = []
@@ -60,13 +63,13 @@ class InformationRetrieval():
                     if word not in self.vocab_list:
                         self.vocab_list.append(word)
             self.vocab_list.sort()
-            with open("vocab_list.pkl", "wb") as fp:  # Pickling
+            with open(os.path.join(self.root_folder, "vocab_list_baseline.pkl"), "wb") as fp:  # Pickling
                 pickle.dump(self.vocab_list, fp)
 
         index_df = pd.DataFrame(data=np.zeros((len(self.vocab_list), len(self.docIDs) + 2)), index=self.vocab_list,
                                 columns=docIDs + ['n_i', 'idf'])
         try:
-            with open("index_df.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.root_folder, "index_df_baseline.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
         except IOError or FileNotFoundError:
             print('creating tf-idf vectors for documents')
@@ -81,7 +84,7 @@ class InformationRetrieval():
             index_df['idf'] = index_df['n_i'].apply(lambda x: np.log10(len(docs) / x) if x > 0 else 0)
             index_df[docIDs] = index_df[docIDs].mul(index_df['idf'].to_numpy(), axis='rows')
             index_df.pop('n_i')
-            with open("index_df.pkl", "wb") as fp:  # Pickling
+            with open(os.path.join(self.root_folder, "index_df_baseline.pkl"), "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
         self.ini_index = index_df
 
@@ -97,9 +100,11 @@ class InformationRetrieval():
         #    lisp1 = pickle.load(fp)
 
         try:
-            with open("index_df1.pkl", "rb") as fp:  # Unpickling
+            if self.baseline:
+                raise IOError
+            with open(os.path.join(self.root_folder, "index_df1.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
-            with open("pipeline.pkl", "rb") as fp:
+            with open(os.path.join(self.root_folder, "pipeline.pkl"), "rb") as fp:
                 self.pipe = pickle.load(fp)
             self.docIDs = index_df.columns[:-1]
 
@@ -109,16 +114,22 @@ class InformationRetrieval():
             self.pipe = Pipeline(
                 [('count', CountVectorizer(tokenizer=dummy, preprocessor=dummy, ngram_range=(1, 1),
                                            min_df=1)),
-                 ('tfid', TfidfTransformer(smooth_idf=False, sublinear_tf=True))]).fit(docs)
+                 ('tfid', TfidfTransformer(smooth_idf=False, sublinear_tf=not self.baseline))]).fit(docs)
             X = self.pipe.transform(docs)
             df = pd.DataFrame(X.toarray(), columns=self.pipe['count'].get_feature_names())
             index_df = df.transpose()
             index_df.columns = docIDs
             index_df['idf'] = np.log10(np.exp(self.pipe['tfid'].idf_ - 1))
-            with open("index_df1.pkl", "wb") as fp:  # Pickling
-                pickle.dump(index_df, fp)
-            with open("pipeline.pkl", "wb") as fp:
-                pickle.dump(self.pipe, fp)
+            if not self.baseline:
+                with open(os.path.join(self.root_folder, "index_df1.pkl"), "wb") as fp:  # Pickling
+                    pickle.dump(index_df, fp)
+                with open(os.path.join(self.root_folder, "pipeline.pkl"), "wb") as fp:
+                    pickle.dump(self.pipe, fp)
+            else:
+                with open(os.path.join(self.root_folder, "index_df1_baseline.pkl"), "wb") as fp:  # Pickling
+                    pickle.dump(index_df, fp)
+                with open(os.path.join(self.root_folder, "pipeline_baseline.pkl"), "wb") as fp:
+                    pickle.dump(self.pipe, fp)
         self.ini_index = index_df
 
     def buildIndex2(self, docs, docIDs):
@@ -133,9 +144,9 @@ class InformationRetrieval():
         #    lisp1 = pickle.load(fp)
 
         try:
-            with open("index_bigrams_df1.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.root_folder, "index_bigrams_df1.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
-            with open("pipeline_bigrams.pkl", "rb") as fp:
+            with open(os.path.join(self.root_folder, "pipeline_bigrams.pkl"), "rb") as fp:
                 self.pipe_bi = pickle.load(fp)
             self.docIDs = index_df.columns[:-1]
 
@@ -143,7 +154,7 @@ class InformationRetrieval():
             print('this works bigrams')
             self.docIDs = docIDs
             self.pipe_bi = Pipeline(
-                [('count', CountVectorizer(tokenizer=dummy, preprocessor=dummy, ngram_range=(2, 2),max_df=0.5,
+                [('count', CountVectorizer(tokenizer=dummy, preprocessor=dummy, ngram_range=(2, 2), max_df=0.1,
                                            min_df=1)),
                  ('tfid', TfidfTransformer(smooth_idf=False, sublinear_tf=True))]).fit(docs)
             X = self.pipe_bi.transform(docs)
@@ -151,9 +162,9 @@ class InformationRetrieval():
             index_df = df.transpose()
             index_df.columns = docIDs
             index_df['idf'] = np.log10(np.exp(self.pipe_bi['tfid'].idf_ - 1))
-            with open("index_bigrams_df1.pkl", "wb") as fp:  # Pickling
+            with open(os.path.join(self.root_folder, "index_bigrams_df1.pkl"), "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
-            with open("pipeline_bigrams.pkl", "wb") as fp:
+            with open(os.path.join(self.root_folder, "pipeline_bigrams.pkl"), "wb") as fp:
                 pickle.dump(self.pipe_bi, fp)
         self.ini_index_bi = index_df
 
@@ -165,7 +176,7 @@ class InformationRetrieval():
         :return:
         """
         try:
-            with open("title_index_df1.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.root_folder, "title_index_df1.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
         except IOError or FileNotFoundError:
             X = self.pipe.transform(docs)
@@ -173,7 +184,7 @@ class InformationRetrieval():
             index_df = df.transpose()
             index_df.columns = self.docIDs
             index_df['idf'] = np.log10(np.exp(self.pipe['tfid'].idf_ - 1))
-            with open("title_index_df1.pkl", "wb") as fp:  # Pickling
+            with open(os.path.join(self.root_folder, "title_index_df1.pkl"), "wb") as fp:  # Pickling
                 pickle.dump(index_df, fp)
         self.title_ini_index = index_df
 
@@ -196,7 +207,6 @@ class InformationRetrieval():
         b_df['idf'] = self.ini_index['idf']
         self.index = b_df
 
-
     def combine(self, ratio):
         """
         combines tf-idf matrices of both documents and titles with a ratio
@@ -207,8 +217,9 @@ class InformationRetrieval():
         mag = np.sqrt(np.square(index_df).sum(axis=0))
         mag['idf'] = 1 + ratio
         self.index = index_df / mag
-        with open("index_df2.pkl", "wb") as fp:  # Pickling
-            pickle.dump(self.index, fp)
+        if not self.baseline:
+            with open(os.path.join(self.root_folder, "index_df2.pkl"), "wb") as fp:  # Pickling
+                pickle.dump(self.index, fp)
 
     def sk_lsi(self, num_vec):
         """
@@ -248,6 +259,8 @@ class InformationRetrieval():
         :return:
         """
         self.index = self.ini_index
+        self.index_bi = self.ini_index
+        self.pipe_bi = self.pipe
 
     def rank(self, queries):
         """
@@ -314,9 +327,9 @@ class InformationRetrieval():
                                                            .mul(query_df[query_ind].to_numpy(), axis='rows')
                                                            .sum(axis=0))'''
             dot_p_diff = dot_p - dot_p_bi
-            dot_p_max = dot_p + 0.8*dot_p_bi
+            dot_p_max = dot_p + 0.85*dot_p_bi
             doc_IDs_ordered.append(list(dot_p_max.loc[dot_p_max > 0].sort_values(ascending=False).index))
             doc_IDs_ordered_extra.append(dot_p_max)
-        with open("dotp.pkl", "wb") as fp:  # Unpickling
+        with open(os.path.join(self.root_folder, "dotp.pkl"), "wb") as fp:  # Unpickling
             pickle.dump(doc_IDs_ordered_extra, fp)
         return doc_IDs_ordered

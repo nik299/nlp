@@ -7,6 +7,7 @@ from informationRetrieval import InformationRetrieval
 from evaluation import Evaluation
 from gensimvect import vectorizer
 from sys import version_info
+import os
 import pickle
 from nltk.wsd import lesk
 import argparse
@@ -28,17 +29,18 @@ else:
 
 class SearchEngine:
 
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, main_args, cache_dir_passed):
+        self.cache_dir = cache_dir_passed
+        self.args = main_args
 
         self.tokenizer = Tokenization()
-        self.tokenandlemmatizer = tokenizerLemmatizer()
+        self.tokenAndLemmatizer = tokenizerLemmatizer()
         self.sentenceSegmenter = SentenceSegmentation()
         self.inflectionReducer = InflectionReduction()
         self.stopwordRemover = StopwordRemoval()
         self.vectorizer = vectorizer()
-        self.informationRetriever = InformationRetrieval()
-        self.evaluator = Evaluation()
+        self.informationRetriever = InformationRetrieval(self.args.baseline, self.cache_dir)
+        self.evaluator = Evaluation(self.cache_dir, self.args)
 
     def segmentSentences(self, text):
         """
@@ -49,8 +51,11 @@ class SearchEngine:
         elif self.args.segmenter == "punkt":
             return self.sentenceSegmenter.punkt(text)
 
-    def tokenizeandlemmatize(self, text):
-        return self.tokenandlemmatizer.spacy_lemmatizer(text)
+    def tokenizeAndLemmatize(self, text):
+        """
+        does both tokenizeing and lemmatizing
+        """
+        return self.tokenAndLemmatizer.spacy_lemmatizer(text)
 
     def tokenize(self, text):
         """
@@ -71,7 +76,7 @@ class SearchEngine:
         """
 		Call the required stopword remover
 		"""
-        return self.stopwordRemover.fromList(text)
+        return self.stopwordRemover.fromList(text, self.args.baseline)
 
     def preprocessQueries(self, queries):
         """
@@ -83,28 +88,33 @@ class SearchEngine:
         for query in queries:
             segmentedQuery = self.segmentSentences(query)
             segmentedQueries.append(segmentedQuery)
-        json.dump(segmentedQueries, open(self.args.out_folder + "segmented_queries.txt", 'w'))
+        json.dump(segmentedQueries, open(os.path.join(self.args.out_folder, "segmented_queries.txt"), 'w'))
         # Tokenize queries
         tokenizedQueries = []
-        tokenized_lemmatizedQueries = []
+        tokenized_lemmatizedQueries = []  # tokenize and lemmatize  queries
         for query in segmentedQueries:
             tokenizedQuery = self.tokenize(query)
-            tokenized_lemmatizedQuery = self.tokenizeandlemmatize(query)
+            tokenized_lemmatizedQuery = self.tokenizeAndLemmatize(query)
             tokenized_lemmatizedQueries.append(tokenized_lemmatizedQuery)
             tokenizedQueries.append(tokenizedQuery)
-        json.dump(tokenizedQueries, open(self.args.out_folder + "tokenized_queries.txt", 'w'))
+        json.dump(tokenizedQueries, open(os.path.join(self.args.out_folder, "tokenized_queries.txt"), 'w'))
         # Stem/Lemmatize queries
         reducedQueries = []
         for query in tokenizedQueries:
             reducedQuery = self.reduceInflection(query)
             reducedQueries.append(reducedQuery)
-        json.dump(reducedQueries, open(self.args.out_folder + "reduced_queries.txt", 'w'))
+        json.dump(reducedQueries, open(os.path.join(self.args.out_folder, "reduced_queries.txt"), 'w'))
         # Remove stopwords from queries
         stopwordRemovedQueries = []
-        for query in tokenized_lemmatizedQueries:
-            stopwordRemovedQuery = self.removeStopwords(query)
-            stopwordRemovedQueries.append(stopwordRemovedQuery)
-        json.dump(stopwordRemovedQueries, open(self.args.out_folder + "stopword_removed_queries.txt", 'w'))
+        if self.args.baseline:
+            for query in reducedQueries:
+                stopwordRemovedQuery = self.removeStopwords(query)
+                stopwordRemovedQueries.append(stopwordRemovedQuery)
+        else:
+            for query in tokenized_lemmatizedQueries:
+                stopwordRemovedQuery = self.removeStopwords(query)
+                stopwordRemovedQueries.append(stopwordRemovedQuery)
+        json.dump(stopwordRemovedQueries, open(os.path.join(self.args.out_folder, "stopword_removed_queries.txt"), 'w'))
 
         preprocessedQueries = stopwordRemovedQueries
         return preprocessedQueries
@@ -120,31 +130,37 @@ class SearchEngine:
             segmentedDoc = self.segmentSentences(doc)
             segmentedDocs.append(segmentedDoc)
         if not title:
-            json.dump(segmentedDocs[0], open(self.args.out_folder + "segmented_docs.txt", 'w'))
+            json.dump(segmentedDocs[0], open(os.path.join(self.args.out_folder, "segmented_docs.txt"), 'w'))
         # Tokenize docs
         tokenizedDocs = []
         tokenized_lemmatizedDocs = []
         for doc in segmentedDocs:
             tokenizedDoc = self.tokenize(doc)
-            tokenized_lemmatizedDoc = self.tokenizeandlemmatize(doc)
+            tokenized_lemmatizedDoc = self.tokenizeAndLemmatize(doc)
             tokenizedDocs.append(tokenizedDoc)
             tokenized_lemmatizedDocs.append(tokenized_lemmatizedDoc)
         if not title:
-            json.dump(tokenizedDocs[0], open(self.args.out_folder + "tokenized_docs.txt", 'w'))
+            json.dump(tokenizedDocs[0], open(os.path.join(self.args.out_folder, "tokenized_docs.txt"), 'w'))
         # Stem/Lemmatize docs
         reducedDocs = []
         for doc in tokenizedDocs:
             reducedDoc = self.reduceInflection(doc)
             reducedDocs.append(reducedDoc)
         if not title:
-            json.dump(reducedDocs[0], open(self.args.out_folder + "reduced_docs.txt", 'w'))
+            json.dump(reducedDocs[0], open(os.path.join(self.args.out_folder, "reduced_docs.txt"), 'w'))
         # Remove stopwords from docs
         stopwordRemovedDocs = []
-        for doc in tokenized_lemmatizedDocs:
-            stopwordRemovedDoc = self.removeStopwords(doc)
-            stopwordRemovedDocs.append(stopwordRemovedDoc)
+        if self.args.baseline:
+            for doc in reducedDocs:
+                stopwordRemovedDoc = self.removeStopwords(doc)
+                stopwordRemovedDocs.append(stopwordRemovedDoc)
+        else:
+            for doc in tokenized_lemmatizedDocs:
+                stopwordRemovedDoc = self.removeStopwords(doc)
+                stopwordRemovedDocs.append(stopwordRemovedDoc)
         if not title:
-            json.dump(stopwordRemovedDocs[0], open(self.args.out_folder + "stopword_removed_docs.txt", 'w'))
+            json.dump(stopwordRemovedDocs[0],
+                      open(os.path.join(self.args.out_folder, "stopword_removed_docs.txt"), 'w'))
 
         preprocessedDocs = stopwordRemovedDocs
         return preprocessedDocs
@@ -159,14 +175,14 @@ class SearchEngine:
 		"""
 
         # Read queries
-        queries_json = json.load(open(args.dataset + "cran_queries.json", 'r'))[:]
+        queries_json = json.load(open(os.path.join(self.args.dataset, "cran_queries.json"), 'r'))[:]
         query_ids, queries = [item["query number"] for item in queries_json], \
                              [item["query"] for item in queries_json]
         # Process queries
         processedQueries = self.preprocessQueries(queries)
 
         # Read documents
-        docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
+        docs_json = json.load(open(os.path.join(self.args.dataset, "cran_docs.json"), 'r'))[:]
         doc_ids, docs, titles = [item["id"] for item in docs_json], \
                                 [item["body"] for item in docs_json], [item['title'] for item in
                                                                        docs_json]
@@ -175,23 +191,33 @@ class SearchEngine:
         processedTitles = self.preprocessDocs(titles, title=True)
 
         # Build document index
-        self.informationRetriever.buildIndex1(word_pool(processedDocs), doc_ids)
-        self.informationRetriever.buildIndex2(word_pool(processedDocs), doc_ids)
-        self.informationRetriever.buildTitleIndex1(word_pool(processedTitles))
+        if self.args.baseline:
+            print(len(processedDocs))
+            self.informationRetriever.buildIndex1(word_pool(processedDocs), doc_ids)
+            self.informationRetriever.no_lsi()
+            doc_IDs_ordered = self.informationRetriever.rank(word_pool(processedQueries))
+            import pickle
+            with open(os.path.join(self.cache_dir, "doc_Ids.pkl"), "wb") as fp:  # Pickling
+                pickle.dump(doc_IDs_ordered, fp)
 
-        self.informationRetriever.sk_lsi(395)
-        self.informationRetriever.sk_lsi_bi(395)
-        self.informationRetriever.combine(0.2)
-        # self.informationRetriever.no_lsi()
-        # Rank the documents for each query
-        doc_IDs_ordered = self.informationRetriever.rank(word_pool(processedQueries))
-        # self.vectorizer.build_index(processedDocs, doc_ids, 20)
-        # doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
-        import pickle
-        with open("doc_Ids.pkl", "wb") as fp:  # Pickling
-            pickle.dump(doc_IDs_ordered, fp)
-        # Read relevance judements
-        qrels = json.load(open(args.dataset + "cran_qrels.json", 'r'))[:]
+        else:
+            self.informationRetriever.buildIndex1(word_pool(processedDocs), doc_ids)
+            self.informationRetriever.buildIndex2(word_pool(processedDocs), doc_ids)
+            self.informationRetriever.buildTitleIndex1(word_pool(processedTitles))
+
+            self.informationRetriever.sk_lsi(395)
+            self.informationRetriever.sk_lsi_bi(395)
+            self.informationRetriever.combine(0.2)
+            # self.informationRetriever.no_lsi()
+            # Rank the documents for each query
+            doc_IDs_ordered = self.informationRetriever.rank(word_pool(processedQueries))
+            # self.vectorizer.build_index(processedDocs, doc_ids, 20)
+            # doc_IDs_ordered = self.vectorizer.rank(processedQueries,doc_IDs_ordered1)
+            import pickle
+            with open(os.path.join(self.cache_dir, "doc_Ids.pkl"), "wb") as fp:  # Pickling
+                pickle.dump(doc_IDs_ordered, fp)
+        # Read relevance judgements
+        qrels = json.load(open(os.path.join(self.args.dataset, "cran_qrels.json"), 'r'))[:]
 
         # Calculate precision, recall, f-score, MAP and nDCG for k = 1 to 10
         precisions, recalls, fscores, MAPs, nDCGs = [], [], [], [], []
@@ -227,7 +253,7 @@ class SearchEngine:
         plt.legend()
         plt.title("Evaluation Metrics - Cranfield Dataset")
         plt.xlabel("k")
-        plt.savefig(args.out_folder + "eval_plot.png")
+        plt.savefig(os.path.join(self.args.out_folder, "eval_plot.png"))
 
     def handleCustomQuery(self):
         """
@@ -241,35 +267,37 @@ class SearchEngine:
         processedQuery = self.preprocessQueries([query])[0]
 
         # Read documents
-        docs_json = json.load(open(args.dataset + "cran_docs.json", 'r'))[:]
+        docs_json = json.load(open(os.path.join(self.args.dataset, "cran_docs.json"), 'r'))[:]
         doc_ids, docs, titles = [item["id"] for item in docs_json], \
                                 [item["body"] for item in docs_json], [item['title'] for item in
                                                                        docs_json]
         # Process documents
         try:
-            with open("index_df1.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.cache_dir, "index_df1.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
-            with open("pipeline.pkl", "rb") as fp:
+            with open(os.path.join(self.cache_dir, "pipeline.pkl"), "rb") as fp:
                 pipe = pickle.load(fp)
             processedDocs = [""]
         except IOError or FileNotFoundError:
             processedDocs = self.preprocessDocs(docs)
 
         try:
-            with open("title_index_df1.pkl", "rb") as fp:  # Unpickling
+            with open(os.path.join(self.cache_dir, "title_index_df1.pkl"), "rb") as fp:  # Unpickling
                 index_df = pickle.load(fp)
             processedTitles = [""]
         except IOError or FileNotFoundError:
             processedTitles = self.preprocessDocs(titles)
 
         # Build document index
-        self.informationRetriever.buildIndex1(processedDocs, doc_ids)
-        self.informationRetriever.buildTitleIndex1(processedTitles)
+        self.informationRetriever.buildIndex1(word_pool(processedDocs), doc_ids)
+        self.informationRetriever.buildIndex2(word_pool(processedDocs), doc_ids)
+        self.informationRetriever.buildTitleIndex1(word_pool(processedTitles))
 
         self.informationRetriever.sk_lsi(395)
+        self.informationRetriever.sk_lsi_bi(395)
         self.informationRetriever.combine(0.2)
         # Rank the documents for the query
-        doc_IDs_ordered = self.informationRetriever.rank([processedQuery])[0]
+        doc_IDs_ordered = self.informationRetriever.rank(word_pool(processedQuery))[0]
 
         # Print the IDs of first five documents
         print("\nTop five document IDs : ")
@@ -287,18 +315,25 @@ if __name__ == "__main__":
                         help="Path to the dataset folder")
     parser.add_argument('-out_folder', default="output/",
                         help="Path to output folder")
+    parser.add_argument('-cache_path', default=os.path.dirname(os.path.abspath(__file__)),
+                        help='directory in which you want to place cache')
     parser.add_argument('-segmenter', default="punkt",
                         help="Sentence Segmenter Type [naive|punkt]")
     parser.add_argument('-tokenizer', default="ptb",
                         help="Tokenizer Type [naive|ptb]")
     parser.add_argument('-custom', action="store_true",
                         help="Take custom query as input")
+    parser.add_argument('-baseline', default=False,
+                        help='measure baseline readings(of previous assignment')
 
     # Parse the input arguments
     args = parser.parse_args()
+    cache_dir = os.path.join(args.cache_path, 'cache')
+    if not os.path.exists(cache_dir):
+        os.mkdir(cache_dir)
 
     # Create an instance of the Search Engine
-    searchEngine = SearchEngine(args)
+    searchEngine = SearchEngine(args, cache_dir)
 
     # Either handle query from user or evaluate on the complete dataset
     if args.custom:
