@@ -49,7 +49,7 @@ class Tokenization():
         penn = TreebankWordTokenizer()
         tokenizedText = []
         for sentence in text:
-            tokenizedText += penn.tokenize(sentence)
+            tokenizedText.append(penn.tokenize(sentence))
 
         # Fill in code here
 

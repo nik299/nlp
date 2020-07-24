@@ -252,11 +252,13 @@ class Evaluation:
             queries_json = json.load(open(os.path.join(self.args.dataset, "cran_queries.json"), 'r'))[:]
             query_ids, queries = [item["query number"] for item in queries_json], \
                                  [item["query"] for item in queries_json]
-            print('query id', query_id, str(nDCG)[:6])
-            print(queries[int(query_id) - 1])
-            print([str(res['id']) + ':' + str(res['position']) + ':' + str(docid[int(query_id) - 1][int(res['id'])])[:6]
-                   for res in true_doc_ids])
-            print([str(doc) + ':' + str(docid[int(query_id) - 1][int(doc)])[:6] for doc in query_doc_ids_ordered[:k]])
+            with open(os.path.join(self.args.out_folder, "query_log.txt"),'w') as fp:
+                print('query id', query_id, str(nDCG)[:6], file=fp)
+                print(queries[int(query_id) - 1], file=fp)
+                print([str(res['id']) + ':' + str(res['position']) + ':' + str(docid[int(query_id) - 1][int(res['id'])])[:6]
+                       for res in true_doc_ids], file=fp)
+                print([str(doc) + ':' + str(docid[int(query_id) - 1][int(doc)])[:6]
+                       for doc in query_doc_ids_ordered[:k]], file=fp)
         # Fill in code here
         return nDCG
 

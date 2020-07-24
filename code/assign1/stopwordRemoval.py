@@ -9,7 +9,7 @@ from nltk.corpus import stopwords
 
 class StopwordRemoval():
 
-    def fromList(self, text):
+    def fromList(self, text, baseline):
         """
 		Sentence Segmentation using the Punkt Tokenizer
 
@@ -26,13 +26,18 @@ class StopwordRemoval():
 			representing a document with stopwords removed
 		"""
 
-        stop_words = set(['', ' ', '  ', "'", "'s", '.', '=', 'PRON', 'a.'])
+        stop_words = {'', ' ', '  ', "'", "'s", '.', '=', 'PRON', 'a.'}
         stopword_removed_synsets = []
         for sentence in text:
             stopword_removed_sentence = []
-            for word_synset in sentence:
-                if word_synset.split('^_*')[0] not in stop_words:
-                    stopword_removed_sentence.append(word_synset.split('^_*')[0])
+            if baseline:
+                for word in sentence:
+                    if word not in stop_words:
+                        stopword_removed_sentence.append(word)
+            else:
+                for word_synset in sentence:
+                    if word_synset.split('^_*')[0] not in stop_words:
+                        stopword_removed_sentence.append(word_synset.split('^_*')[0])
             stopword_removed_bigrams = []
             bi2 = ''
 
@@ -45,7 +50,7 @@ class StopwordRemoval():
                 else:
                     bi2 = wo
             stopword_removed_synsets.append(stopword_removed_sentence)
-            #stopword_removed_synsets.append(stopword_removed_bigrams)
+        #stopword_removed_synsets.append(stopword_removed_bigrams)
         # Fill in code here
         '''
         stopword_removed_bigrams =[]
