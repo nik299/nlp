@@ -16,9 +16,11 @@ running and how much is progressed
 
 ## sample Instruction
 
-for evaluation
-main.py -dataset [insert your data directory] -out_folder [insert your output directory] -cache_path [insert your directory in which program will save all pickle files] -baseline [put True if you want to get assignment 2 reading] 
+for running the code run this command 
 
+```
+main.py -dataset [insert your data directory] -out_folder [insert your output directory] -cache_path [insert your directory in which program will save all pickle files] -baseline [put True if you want to get assignment 2 reading] 
+```
 note: 
 1. if -cache_path is not mentioned program will save in directory in which file is executed
 2. -baseline default is False
