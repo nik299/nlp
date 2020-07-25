@@ -37,7 +37,7 @@ class StopwordRemoval():
             else:
                 for word_synset in sentence:
                     if word_synset.split('^_*')[0] not in stop_words:
-                        stopword_removed_sentence.append(word_synset.split('^_*')[0])
+                        stopword_removed_sentence.append(word_synset.split('^_*')[1])
             stopword_removed_bigrams = []
             bi2 = ''
 

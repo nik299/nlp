@@ -205,8 +205,8 @@ class SearchEngine:
             self.informationRetriever.buildIndex2(word_pool(processedDocs), doc_ids)
             self.informationRetriever.buildTitleIndex1(word_pool(processedTitles))
 
-            self.informationRetriever.sk_lsi(395)
-            self.informationRetriever.sk_lsi_bi(395)
+            self.informationRetriever.sk_lsi(430)
+            self.informationRetriever.sk_lsi_bi(320)
             self.informationRetriever.combine(0.2)
             # self.informationRetriever.no_lsi()
             # Rank the documents for each query

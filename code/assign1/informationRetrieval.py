@@ -303,11 +303,13 @@ class InformationRetrieval:
         print(query_df.info())
         print(self.index[self.docIDs].info())
         print('matching documents with queries')
-        help_p = self.pipe['count'].get_feature_names()
-        sum_p = pd.DataFrame(np.zeros((len(help_p), 1400)), index=help_p, columns=self.docIDs)
+        # help_p = self.pipe['count'].get_feature_names()
+        # sum_p = pd.DataFrame(np.zeros((len(help_p), 1400)), index=help_p, columns=self.docIDs)
         print('matching documents with queries')
-        help_p_bi = self.pipe_bi['count'].get_feature_names()
-        sum_p_bi = pd.DataFrame(np.zeros((len(help_p_bi), 1400)), index=help_p_bi, columns=self.docIDs)
+        # help_p_bi = self.pipe_bi['count'].get_feature_names()
+        # sum_p_bi = pd.DataFrame(np.zeros((len(help_p_bi), 1400)), index=help_p_bi, columns=self.docIDs)
+        act_matrix = self.index[self.docIDs]
+        act_matrix_bi = self.index_bi[self.docIDs]
         for query_ind in tqdm(range(len(queries))):
             '''
             for word in queries[query_ind]:
@@ -315,19 +317,18 @@ class InformationRetrieval:
                     query_df.loc[[word], [query_ind]] += 1
             query_df[query_ind] = query_df[query_ind].mul(query_df['idf'].to_numpy(), axis='rows')
             '''
-            dot_p = self.index[self.docIDs].mul(query_df[query_ind].to_numpy(), axis='rows')
-            sum_p = sum_p + dot_p.abs()
-            dot_p = dot_p.abs().sum(axis=0)
-            dot_p = dot_p.div(doc_mag).fillna(0)
-            dot_p_bi = self.index_bi[self.docIDs].mul(query_df_bi[query_ind].to_numpy(), axis='rows')
-            sum_p_bi = sum_p_bi + dot_p_bi.abs()
-            dot_p_bi = dot_p_bi.abs().sum(axis=0)
-            dot_p_bi = dot_p_bi.div(doc_mag_bi).fillna(0)
+            dot_p = act_matrix.mul(query_df[query_ind].to_numpy(), axis='rows').abs().sum(axis=0).div(doc_mag).fillna(0)
+            # sum_p = sum_p + dot_p.abs()
+            # dot_p = dot_p.abs().sum(axis=0).div(doc_mag).fillna(0)
+            dot_p_bi = act_matrix_bi.mul(query_df_bi[query_ind].to_numpy(), axis='rows').abs()\
+                .sum(axis=0).div(doc_mag_bi).fillna(0)
+            # sum_p_bi = sum_p_bi + dot_p_bi.abs()
+            # dot_p_bi = dot_p_bi.abs().sum(axis=0).div(doc_mag_bi).fillna(0)
             ''' / np.sqrt(query_df[query_ind]
                                                            .mul(query_df[query_ind].to_numpy(), axis='rows')
                                                            .sum(axis=0))'''
-            dot_p_diff = dot_p - dot_p_bi
-            dot_p_max = dot_p + 0.85*dot_p_bi
+            # dot_p_diff = dot_p - dot_p_bi
+            dot_p_max = dot_p + 0.8*dot_p_bi
             doc_IDs_ordered.append(list(dot_p_max.loc[dot_p_max > 0].sort_values(ascending=False).index))
             doc_IDs_ordered_extra.append(dot_p_max)
         with open(os.path.join(self.root_folder, "dotp.pkl"), "wb") as fp:  # Unpickling
