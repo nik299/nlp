@@ -1,5 +1,6 @@
 import spacy
 from nltk.wsd import lesk
+from nltk.corpus import wordnet as wn
 
 
 class tokenizerLemmatizer:
@@ -58,6 +59,7 @@ class tokenizerLemmatizer:
         for sent in docs:
             sent = sent.replace('/', '').replace('(', '').replace(')', '')
             reduced_sent = []
+            synsynsets = []
             root = '@@'
             subject = '@@'
             procesed_sent = self.nlp(sent)
@@ -67,13 +69,37 @@ class tokenizerLemmatizer:
                 if token.dep_ != 'punct':
                     uni_word = self.is_number(token.lemma_.replace('/', '').replace('-', ''))
                     try:
-                        uni_word = uni_word + '^_*' + lesk(sent, uni_word).name()
+                        ss1 = lesk(sent, uni_word)
+                        uni_word = uni_word + '^_*' + ss1.name()
+                        ex_words = []
+                        common = []
+                        cm_count = []
+                        for ss in wn.synsets(uni_word):
+                            ex_words.append(uni_word + '^_*' + ss.name())
+                            hypma = uni_word + '^_*' + ss.lowest_common_hypernyms(ss1)
+                            if hypma not in common:
+                                common.append(hypma)
+                                cm_count.append(1)
+                            ex_words.append(common[cm_count.index(max(cm_count))])
                     except AttributeError:
                         try:
-                            uni_word = uni_word + '^_*' + lesk(uni_word, uni_word).name()
+                            ss1 = lesk(uni_word, uni_word)
+                            uni_word = uni_word + '^_*' + ss1.name()
+                            ex_words = []
+                            common = []
+                            cm_count = []
+                            for ss in wn.synsets(uni_word):
+                                ex_words.append(uni_word + '^_*' + ss.name())
+                                hypma = uni_word + '^_*' + ss.lowest_common_hypernyms(ss1)
+                                if hypma not in common:
+                                    common.append(hypma)
+                                    cm_count.append(1)
+                                ex_words.append(common[cm_count.index(max(cm_count))])
                         except AttributeError:
                             uni_word = uni_word + '^_*' + uni_word
+                            ex_words = []
                     reduced_sent.append(uni_word)
+                    synsynsets += ex_words
 
                 '''
                 if token.dep_ == 'nsubj':
@@ -95,4 +121,5 @@ class tokenizerLemmatizer:
             '''
 
             reduced_text.append(reduced_sent)
+            reduced_text.append(synsynsets)
         return reduced_text
